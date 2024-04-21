@@ -59,6 +59,7 @@ async def register(register_id,student_family : student_family):
         },)
     db["preregistres"].update_one({"_id": ObjectId(register_id)}, {
     "$set": {
+        "status":"PENDING",
         "personalInfo.first_nameValidation": True,
         "personalInfo.first_nameCause": "",
         "personalInfo.last_nameValidation": True,
