@@ -23,6 +23,7 @@ async def register(register_id,student : student):
     preregistre = db["preregistres"].update_one({"_id":ObjectId(register_id)},{
             "$set": {
                 "personalInfo":{
+                "annee":student.annee ,
                 "first_name": student.first_name,
                 "last_name": student.last_name,
                 "cin": student.cin,
