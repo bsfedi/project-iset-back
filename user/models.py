@@ -14,6 +14,17 @@ class User_login(BaseModel):
     password: str =""
  
 
+class New_user(BaseModel):
+    first_name:str
+    last_name :str
+    code : Optional[str]
+    email :str
+    phone : str
+    identifiant :str
+    departement : str
+    grade : str
+    role : str
+    
 class student(BaseModel):
     first_name : str =""
     last_name : str =""

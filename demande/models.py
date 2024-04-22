@@ -16,6 +16,7 @@ class demande_presence(BaseModel):
     enseignants : list 
     code : Optional[str] 
     departement : Optional[str] 
+    datedepot : Optional[datetime]
     classe : Optional[str] 
 
 
@@ -26,6 +27,7 @@ class demande_verification(BaseModel):
     cin:str 
     type : str
     matiere : str
+    datedepot : Optional[datetime]
     note : int 
     code : Optional[str] 
     departement : Optional[str] 

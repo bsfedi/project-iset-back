@@ -1,3 +1,4 @@
+from bson import ObjectId
 from fastapi import APIRouter, HTTPException
 from secuirty import *
 from user.models import *
@@ -44,6 +45,22 @@ async def sign_up(user: User):
 
 
 @user_router.post(
+    "/auth/newuser",
+)
+async def sign_up(user: New_user):
+    """
+    Validates a password format based on specified requirements:
+    - At least 8 characters long
+    - Contains at least one uppercase letter
+    - Contains at least one lowercase letter
+    - Contains at least one digit
+    - Contains at least one special character
+    """
+    # Get date of today
+    response = db["users"].insert_one(dict(user))
+    return {"response":"user added sucessfully"}
+
+@user_router.post(
     "/auth/login",
 )
 async def login_api(userr: User_login):
@@ -88,3 +105,11 @@ async def get_list_users():
 
     all_users = get_all_users()
     return {"users": all_users}
+
+
+@user_router.get("/user/{user_id}")
+async def get_user_by_id(user_id):
+    user = db["users"].find_one({"_id":ObjectId(user_id)})
+    user['_id']=str(user['_id'])
+    return user
+    
