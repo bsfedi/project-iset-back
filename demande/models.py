@@ -15,9 +15,10 @@ class demande_presence(BaseModel):
     nb_fr : int
     enseignants : list 
     code : Optional[str] 
-    departement : Optional[str] 
-    datedepot : Optional[datetime]
-    classe : Optional[str] 
+    departement : Optional[str]
+    datedepot : Optional[datetime] =datetime.now()
+    classe : Optional[str]
+    status : Optional[str] = "pending"
 
 
 class demande_verification(BaseModel):
@@ -27,9 +28,15 @@ class demande_verification(BaseModel):
     cin:str 
     type : str
     matiere : str
-    datedepot : Optional[datetime]
+    datedepot : Optional[datetime]  =datetime.now()
     note : int 
     code : Optional[str] 
     departement : Optional[str] 
     classe : Optional[str]
     commantaire : Optional[str]
+    status : Optional[str]   = "pending"
+
+
+class update_demande(BaseModel):
+    role : str
+    status : str

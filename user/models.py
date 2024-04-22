@@ -24,7 +24,8 @@ class New_user(BaseModel):
     departement : str
     grade : str
     role : str
-    
+    password : str
+
 class student(BaseModel):
     first_name : str =""
     last_name : str =""

@@ -33,7 +33,11 @@ def get_user_by_email(email):
 def get_all_users():
     user_list = []
     try:
-        for user in db["users"].find():
+        # Query to find users where role is not "student"
+
+        
+        # Iterate over users that match the query 
+        for user in db["users"].find({"role": {"$nin": ["student", "tuitionofficer","ADMIN"]}}):
             # Convert ObjectId to string
             user["_id"] = str(user["_id"]) 
             # Convert the bytes to a base64-encoded string using base64.b64encode
@@ -43,8 +47,7 @@ def get_all_users():
     except Exception as ex:
         return {
             "message": f"{str(ex)}"
-        }  # Return an error message with exception details if an exception occurs
-
+        }  
 
 def verify_password(hashed_password, password):
     try:
