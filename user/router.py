@@ -148,7 +148,7 @@ async def upload_file(file: UploadFile = File(...)):
                         # Insert the new user into MongoDB
                         
                         try:
-                            
+                            code =row["code_enseignement"]
                             sender_address = gmail_user
                             sender_pass = pass_code
                             receiver_address = row["email"]
@@ -158,7 +158,7 @@ async def upload_file(file: UploadFile = File(...)):
                             message["Subject"] = subject
 
                             # Attach the additional information and HTML table to the email
-                            message.attach(MIMEText(f"<b>  votre {row["code_enseignement"]} et le mot de passe est {password} <b> ", "html"))
+                            message.attach(MIMEText(f"<b>  votre {code} et le mot de passe est {password} <b> ", "html"))
 
                             # Create SMTP session for sending the mail
                             session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
