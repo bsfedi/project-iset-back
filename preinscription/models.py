@@ -84,3 +84,7 @@ class validation(BaseModel):
     departementCause :Optional[str]
     classeValidation : Optional[bool] 
     classeCause :Optional[str]
+    note1Validation : Optional[bool] = True
+    note1Cause :Optional[str] = ""
+    note2Validation : Optional[bool]  = True
+    note2Cause :Optional[str] = ""

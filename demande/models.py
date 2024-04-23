@@ -39,4 +39,4 @@ class demande_verification(BaseModel):
 
 class update_demande(BaseModel):
     role : str
-    status : str
+    validated:bool

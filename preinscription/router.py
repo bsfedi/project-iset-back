@@ -110,6 +110,7 @@ async def register(register_id,student_family : student_family):
 @preregiter_router.post("/docs/{register_id}")
 async def upload_file(register_id, 
                       baccalaureate: Optional[UploadFile] = File(None), 
+                      img_profil : Optional[UploadFile] = File(None),
                       cin: Optional[UploadFile] = File(None), 
                       transcripts: Optional[UploadFile] = File(None)):
     if baccalaureate:
@@ -121,6 +122,10 @@ async def upload_file(register_id,
     if transcripts:
         with open(os.path.join("uploads", transcripts.filename), "wb") as buffer:
             buffer.write(await transcripts.read())
+    if img_profil:
+        with open(os.path.join("uploads", img_profil.filename), "wb") as buffer:
+            buffer.write(await img_profil.read())
+    
 
     update_data = {}
     if baccalaureate:
@@ -129,9 +134,59 @@ async def upload_file(register_id,
         update_data["cin"] = cin.filename
     if transcripts:
         update_data["transcripts"] = transcripts.filename
+    if img_profil:
+        update_data["img_profil"] = img_profil.filename
 
     preregistre = db["preregistres"].update_one({"_id": ObjectId(register_id)}, {"$set": {"docs": update_data}})
     return {"filename": transcripts.filename if transcripts else None}
+
+
+@preregiter_router.post("/new_docs_1/{register_id}")
+async def upload_file(register_id, 
+                      note1: Optional[UploadFile] = File(None)
+       
+                ):
+    if note1:
+        with open(os.path.join("uploads", note1.filename), "wb") as buffer:
+            buffer.write(await note1.read())
+
+    
+
+    update_data = {}
+    if note1:
+        update_data["note1"] = note1.filename
+
+
+    preregistre = db["preregistres"].update_one({"_id": ObjectId(register_id)}, {"$set": {"docs.note1": update_data["note1"],       
+        "docs.note1Validation": True,
+        "docs.note1Cause": "",}})
+    return True
+
+@preregiter_router.post("/new_docs_2/{register_id}")
+async def upload_file(register_id, 
+                      note1: Optional[UploadFile] = File(None),
+         note2: Optional[UploadFile] = File(None)
+                ):
+    if note1:
+        with open(os.path.join("uploads", note1.filename), "wb") as buffer:
+            buffer.write(await note1.read())
+    if note2:
+        with open(os.path.join("uploads", note2.filename), "wb") as buffer:
+            buffer.write(await note2.read())
+    
+
+    update_data = {}
+    if note1:
+        update_data["note1"] = note1.filename
+    if note2:
+        update_data["note2"] = note2.filename
+
+    preregistre = db["preregistres"].update_one({"_id": ObjectId(register_id)}, {"$set": {"docs.note1": update_data["note1"],"docs.note2": update_data["note2"],        
+        "docs.note1Validation": True,
+        "docs.note1Cause": "",
+        "docs.note2Validation": True,
+        "docs.note2Cause": ""}})
+    return True
 
 
 @preregiter_router.put("/preregister/{register_id}")
@@ -203,7 +258,11 @@ async def validated_register(register_id,validation :validation):
                 "docs.cinimgValidation": validation.cinimgValidation,
                 "docs.cinimgCause": validation.cinimgCause,
                 "docs.transcriptsValidation": validation.transcriptsValidation,
-                "docs.transcriptsValidation": validation.transcriptsValidation,
+                "docs.transcriptsCause": validation.transcriptsCause,
+                "docs.note1Validation": validation.note1Validation,
+                "docs.note1Cause": validation.note1Cause,
+                "docs.note2Validation": validation.note2Validation,
+                "docs.note2Cause": validation.note2Cause,
   
 
                 
@@ -315,8 +374,10 @@ async def get_all_validated_preregister():
             "message": f"{str(ex)}"
         }  # Return an error message with exception details if an exception occurs
 
-# @preregiter_router.post("/upload/")
-# async def upload_file(file: UploadFile = File(...)):
-#     # Here you can process file uploads if needed
-#     return {"filename": file.filename}
-
+@preregiter_router.get("/get_preregister/{user_id}")
+async def get_preregister_by_user_id(user_id):
+    preregister = db["preregistres"].find_one({"user_id":ObjectId(user_id) })
+    print(preregister)
+    preregister['_id']=str(preregister['_id'])
+    preregister['user_id']=str(preregister['user_id'])
+    return preregister

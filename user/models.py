@@ -25,6 +25,8 @@ class New_user(BaseModel):
     grade : str
     role : str
     password : str
+    service : Optional[str] =""
+    privilege : Optional[str] = ""
 
 class student(BaseModel):
     first_name : str =""

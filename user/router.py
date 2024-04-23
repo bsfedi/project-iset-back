@@ -61,7 +61,7 @@ async def sign_up(user: User):
         )
 
 import csv
-expected_header = ["nom", "prenom", "code_enseignement", "email", "numtel", "identifiantunique","departement", "role" ,"grade"]
+
 
 
 @user_router.post(
@@ -110,73 +110,213 @@ async def sign_up(user: New_user):
 
 
 
-@user_router.post("/upload_users")
-async def upload_file(file: UploadFile = File(...)):
+@user_router.post("/upload_users/{type}")
+async def upload_file(type,file: UploadFile = File(...)):
     try:
-        
+        if type == "enseignant":
+            expected_header = ["nom", "prenom", "code_enseignement", "email", "numtel", "identifiantunique","departement", "role" ,"grade"]
         # Check if the uploaded file is a CSV file
-        if file.filename.endswith('.csv'):
-            contents = await file.read()
-            decoded_contents = contents.decode('utf-8').splitlines()
-            
-            # Read the CSV rows
-            csv_reader = csv.DictReader(decoded_contents)
-            
-            for row in csv_reader:
+            if file.filename.endswith('.csv'):
+                contents = await file.read()
+                decoded_contents = contents.decode('utf-8').splitlines()
                 
-                # Check if the header matches the expected header
-                if list(row.keys()) == expected_header:
-                    existing_user = db["users"].find_one({"email": row["email"]}) 
-                    if existing_user:
-                        pass
-                    else:
-                        password = generate_password()
-                        hashed_password = ph.hash(password)
-                        new_user_data = {
-                        "first_name": row["nom"],
-                        "last_name": row["prenom"],
-                        "code": row["code_enseignement"],
-                        "email": row["email"],
-                        "phone": row["numtel"],
-                        "identifiant": row["identifiantunique"],
-                        "departement": row["departement"],
-                        "grade": row["grade"],
-                        "password":hashed_password ,
-                        "role": row["role"]  # You may need to adjust this depending on your requirements
-                        }
-                        new_user = New_user(**new_user_data)
-                        # Insert the new user into MongoDB
-                        
-                        try:
-                            code =row["code_enseignement"]
-                            sender_address = gmail_user
-                            sender_pass = pass_code
-                            receiver_address = row["email"]
-                            message = MIMEMultipart()
-                            message["From"] = sender_address
-                            message["To"] = row["email"]
-                            message["Subject"] = subject
-
-                            # Attach the additional information and HTML table to the email
-                            message.attach(MIMEText(f"<b>  votre {code} et le mot de passe est {password} <b> ", "html"))
-
-                            # Create SMTP session for sending the mail
-                            session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
-                            session.starttls()  # enable security
-                            session.login(sender_address, sender_pass)  # login with mail_id and password
-                            text = message.as_string()
-                            session.sendmail(sender_address, receiver_address, text)
-                            db['users'].insert_one(new_user.dict())
+                # Read the CSV rows
+                csv_reader = csv.DictReader(decoded_contents)
+                
+                for row in csv_reader:
+                    print(row.keys())
+                    print(expected_header)     
+                    # Check if the header matches the expected header
+                    if list(row.keys()) == expected_header:
+                        print(row)
+                        existing_user = db["users"].find_one({"email": row["email"]}) 
+                        if existing_user:
+                            pass
+                        else:
+                            password = generate_password()
+                            hashed_password = ph.hash(password)
+                            new_user_data = {
+                            "first_name": row["nom"],
+                            "last_name": row["prenom"],
+                            "code": row["code_enseignement"],
+                            "email": row["email"],
+                            "phone": row["numtel"],
+                            "identifiant": row["identifiantunique"],
+                            "departement": row["departement"],
+                            "grade": row["grade"],
+                            "password":hashed_password ,
+                            "role": "enseignant"  # You may need to adjust this depending on your requirements
+                            }
+                            new_user = New_user(**new_user_data)
+                            # Insert the new user into MongoDB
                             
-                        except Exception as e:
-                            return False
-                else:
-                    return {"error": "Header does not match the expected format"}
-            
-            return {"message": "Data inserted successfully"}
-            
+                            try:
+                                code =row["code_enseignement"]
+                                sender_address = gmail_user
+                                sender_pass = pass_code
+                                receiver_address = row["email"]
+                                message = MIMEMultipart()
+                                message["From"] = sender_address
+                                message["To"] = row["email"]
+                                message["Subject"] = subject
+
+                                # Attach the additional information and HTML table to the email
+                                message.attach(MIMEText(f"<b>  votre {code} et le mot de passe est {password} <b> ", "html"))
+
+                                # Create SMTP session for sending the mail
+                                session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
+                                session.starttls()  # enable security
+                                session.login(sender_address, sender_pass)  # login with mail_id and password
+                                text = message.as_string()
+                                session.sendmail(sender_address, receiver_address, text)
+                                db['users'].insert_one(new_user.dict())
+                                
+                            except Exception as e:
+                                return False
+                    else:
+                        return {"error": "Header does not match the expected format"}
+                
+                return {"message": "Data inserted successfully"}
+                
+            else:
+                return {"error": "Uploaded file is not a CSV"}
+        elif type == "technicien":
+            expected_header = ["nom", "prenom", "email", "numtel", "identifiantunique","departement"]
+            if file.filename.endswith('.csv'):
+                contents = await file.read()
+                decoded_contents = contents.decode('utf-8').splitlines()
+                
+                # Read the CSV rows
+                csv_reader = csv.DictReader(decoded_contents)
+                
+                for row in csv_reader:
+                    print(row.keys())
+                    print(expected_header)
+                    # Check if the header matches the expected header
+                    if list(row.keys()) == expected_header:
+                        print(row)
+                        existing_user = db["users"].find_one({"email": row["email"]}) 
+                        if existing_user:
+                            pass
+                        else:
+                            password = generate_password()
+                            hashed_password = ph.hash(password)
+                            new_user_data = {
+                            "first_name": row["nom"],
+                            "last_name": row["prenom"],
+                            "code": "",
+                            "grade": "",
+                            "email": row["email"],
+                            "phone": row["numtel"],
+                            "identifiant": row["identifiantunique"],
+                            "departement": row["departement"],
+                            "role": "technicien",
+                            "password":hashed_password ,
+                            }
+                            new_user = New_user(**new_user_data)
+                            # Insert the new user into MongoDB
+                            
+                            try:
+                               
+                                sender_address = gmail_user
+                                sender_pass = pass_code
+                                receiver_address = row["email"]
+                                message = MIMEMultipart()
+                                message["From"] = sender_address
+                                message["To"] = row["email"]
+                                message["Subject"] = subject
+
+                                # Attach the additional information and HTML table to the email
+                                message.attach(MIMEText(f"<b>  votre  mot de passe est {password} <b> ", "html"))
+
+                                # Create SMTP session for sending the mail
+                                session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
+                                session.starttls()  # enable security
+                                session.login(sender_address, sender_pass)  # login with mail_id and password
+                                text = message.as_string()
+                                session.sendmail(sender_address, receiver_address, text)
+                                db['users'].insert_one(new_user.dict())
+                                
+                            except Exception as e:
+                                return False
+                    else:
+                        return {"error": "Header does not match the expected format"}
+                
+                return {"message": "Data inserted successfully"}
+                
+            else:
+                return {"error": "Uploaded file is not a CSV"}
         else:
-            return {"error": "Uploaded file is not a CSV"}
+            expected_header = ["nom", "prenom", "email", "numtel", "identifiantunique","service"]
+
+            if file.filename.endswith('.csv'):
+                contents = await file.read()
+                decoded_contents = contents.decode('utf-8').splitlines()
+                
+                # Read the CSV rows
+                csv_reader = csv.DictReader(decoded_contents)
+                
+                for row in csv_reader:
+                    print(expected_header)
+                    print(list(row.keys()) )
+                    # Check if the header matches the expected header
+                    if list(row.keys()) == expected_header:
+                       
+                        existing_user = db["users"].find_one({"email": row["email"]}) 
+                        if existing_user:
+                            pass
+                        else:
+                            password = generate_password()
+                            hashed_password = ph.hash(password)
+                            new_user_data = {
+                            "first_name": row["nom"],
+                            "last_name": row["prenom"],
+                            "grade" : "",
+                            "code": "",
+                            "department" : "" ,
+                            "email": row["email"],
+                            "phone": row["numtel"],
+                            "identifiant": row["identifiantunique"],
+                            "service": row["service"],
+                            "role": "personneladministratif",
+                            "password":hashed_password ,
+                              # You may need to adjust this depending on your requirements
+                            }
+                            print(new_user_data)
+                            new_user = New_user(**new_user_data)
+                            print(new_user)
+                            # Insert the new user into MongoDB
+                            
+                            try:
+                                
+                                sender_address = gmail_user
+                                sender_pass = pass_code
+                                receiver_address = row["email"]
+                                message = MIMEMultipart()
+                                message["From"] = sender_address
+                                message["To"] = row["email"]
+                                message["Subject"] = subject
+
+                                # Attach the additional information and HTML table to the email
+                                message.attach(MIMEText(f"<b>  votre mot de passe est {password} <b> ", "html"))
+
+                                # Create SMTP session for sending the mail
+                                session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
+                                session.starttls()  # enable security
+                                session.login(sender_address, sender_pass)  # login with mail_id and password
+                                text = message.as_string()
+                                session.sendmail(sender_address, receiver_address, text)
+                                db['users'].insert_one(new_user.dict())
+                                
+                            except Exception as e:
+                                return False
+                    else:
+                        return {"error": "Header does not match the expected format"}
+                
+                return {"message": "Data inserted successfully"}
+                
+            else:
+                return {"error": "Uploaded file is not a CSV"}
     except Exception as e:
         return {"error": str(e)}
 
@@ -250,3 +390,29 @@ async def get_all_enseignants(departement):
     return all_enseignants
     
     
+@user_router.delete("/user/{user_id}")
+async def delete_user(user_id):
+    result = db["users"].delete_one(dict(_id=ObjectId(user_id)))
+    return {"message" :"user deleted"}
+
+@user_router.get('/add_privilege/{user_id}/{privilege}')
+async def get_all_enseignants(user_id,privilege):
+    all_ens =[]
+    user = db["users"].find_one({"_id":ObjectId(user_id)})
+    if privilege == "directeurdepartement":
+        enseignants = db["users"].find({"privilege": privilege, "departement": user['departement']})
+        for ee in enseignants:
+            print(ee)
+            all_ens.append(ee)
+        if len(all_ens)==1:
+            return {"message":"can add this privilege to tow users"}
+        else:
+            useprivileger = db["users"].update_one({"_id":ObjectId(user_id)},{
+                "$set": {
+                    "privilege":privilege}})
+            return {"message":"privilege add sucessufly"}
+    else:
+        useprivileger = db["users"].update_one({"_id":ObjectId(user_id)},{
+            "$set": {
+                "privilege":privilege}})
+        return {"message":"privilege add sucessufly"}

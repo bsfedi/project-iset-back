@@ -35,16 +35,63 @@ def signup(demande :demande_verification ):
 @demande_router.get("/attestation/{user_id}")
 async def get_demande_attestation(user_id):
     list_attes = []
+    
     response = db["demande_presence"].find({"user_id": user_id})
     for attes in response:
         attes['_id'] = str(attes['_id'])
         enseignants_names = []
-        for i in attes['enseignants']:
-            ens = db["users"].find_one({"_id": ObjectId(i)})
-            enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
+        for i in attes['enseignants'] :
+            ens = db["users"].find_one({"_id":ObjectId (i['_id'])})
+            if ens :
+                enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
+            else :
+
+                enseignants_names.append("unknow" +" "+ "unknow")
+
         attes['enseignants'] = enseignants_names
         list_attes.append(attes)
     return list_attes
+
+    
+@demande_router.get("/attestation/{user_id}")
+async def get_demande_attestation(user_id):
+    list_attes = []
+    
+    response = db["demande_presence"].find({"user_id": user_id})
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        enseignants_names = []
+        for i in attes['enseignants'] :
+            ens = db["users"].find_one({"_id":ObjectId (i['_id'])})
+            if ens :
+                enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
+            else :
+
+                enseignants_names.append("unknow" +" "+ "unknow")
+
+        attes['enseignants'] = enseignants_names
+        list_attes.append(attes)
+    return list_attes
+
+@demande_router.get("/validated_attestation/{user_id}")
+async def get_demande_attestation(user_id):
+    list_attes = []
+    
+    response = db["demande_presence"].find({"user_id": user_id, "status": {"$ne": "validated_by_enseignant"}})
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        enseignants_names = []
+        for i in attes['enseignants']:
+            ens = db["users"].find_one({"_id": ObjectId(i['_id'])})
+            if ens:
+                enseignants_names.append(ens["first_name"] + " " + ens["last_name"])
+            else:
+                enseignants_names.append("unknown" + " " + "unknown")
+
+        attes['enseignants'] = enseignants_names
+        list_attes.append(attes)
+    return list_attes
+
 
 @demande_router.get("/verification/{user_id}")
 async def get_demande_attestation(user_id):
@@ -81,7 +128,7 @@ async def get_demande_attestation(enseignant_id: str):
     # Convert enseignant_id to ObjectId
     enseignant_object_id = ObjectId(enseignant_id)
     # Query documents where enseignants array contains enseignant_object_id
-    response = db["demande_presence"].find({"enseignants": {"$in": [enseignant_id]}})
+    response = db["demande_presence"].find({"enseignants._id": {"$in": [enseignant_id]}})
     for attes in response:
         attes['_id'] = str(attes['_id'])
         list_attes.append(attes)
@@ -89,15 +136,38 @@ async def get_demande_attestation(enseignant_id: str):
         raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
     return list_attes
 
-@demande_router.put("/update_status_demande/{demande_id}")
-async def update_status_demande(demande_id,update_demande:update_demande):
+@demande_router.put("/update_status_demande/{demande_id}/{enseignant_id}")
+async def update_status_demande(demande_id, enseignant_id, update_demande: update_demande):
 
-    db["demande_presence"].update_one({"_id":ObjectId(demande_id)},{
+    db["demande_presence"].update_one(
+        {"_id": ObjectId(demande_id), "enseignants._id": enseignant_id},
+        {
             "$set": {
-                    
-                    "status": update_demande.status,        
+                "enseignants.$.validated": update_demande.validated
+            }
+        }
+    )
+    # Check if all enseignants have validated status as True
+    demande = db["demande_presence"].find_one({"_id": ObjectId(demande_id)})
+    all_validated = all(enseignant.get('validated', False) for enseignant in demande.get('enseignants', []))
+    
+    # If all enseignants have validated status as True, return "ok"
+    if all_validated:
+        db["demande_presence"].update_one(
+        {"_id": ObjectId(demande_id)},{
+            "$set": {"status":"validated_by_enseignant"}
+        }
+        
+        )
+    return {"message": "updated successfully"}
 
-                }
-        })
-    return {"message":"updated sucessuflly"}
 
+@demande_router.get("/update_new_status_demande/{demande_id}")
+async def update_new_status_demande(demande_id):
+    db["demande_presence"].update_one(
+        {"_id": ObjectId(demande_id)},{
+            "$set": {"status":"prete"}
+        }
+        
+        )
+    return {"message": "done"}
