@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from user.router import user_router
 from preinscription.router import preregiter_router
 from demande.router import demande_router
+from rattrapage.router import rattrapge_router
 from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
@@ -12,6 +13,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(user_router)
 app.include_router(preregiter_router)
 app.include_router(demande_router)
+app.include_router(rattrapge_router)
 
 
 """ allows a server to indicate any origins (domain, scheme, or port) """

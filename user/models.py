@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from fastapi import UploadFile
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -47,6 +47,12 @@ class student_family(BaseModel):
     mother_phone: Optional[str] =""
     father_phone: Optional[str] =""
     father_job: Optional[str] =""
+
+class sanction(BaseModel):
+    type : str 
+    date : datetime
+    motif : str
+    user_id :Optional[str] =""
 
 
     

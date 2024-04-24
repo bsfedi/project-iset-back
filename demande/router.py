@@ -1,6 +1,7 @@
 
+import os
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, HTTPException
 from secuirty import *
 from demande.models import *
 
@@ -112,15 +113,36 @@ async def get_demande_attestation():
         list_attes.append(attes)
     return list_attes
 
-@demande_router.get("/verification")
-async def get_demande_attestation():
+@demande_router.get("/verification_by_department/{user_id}")
+async def get_demande_attestation(user_id):
     list_attes = []
-    response = db["demande_verification"].find()
+    user = db["users"].find_one({"_id":ObjectId(user_id)})
+    print(user)
+    response = db["demande_verification"].find({"departement":user["departement"]})
     for attes in response:
         attes['_id']=str(attes['_id'])
+        if attes["enseignant"]  :
+            attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"]
+        else:
+            pass
         list_attes.append(attes)
     return list_attes
 
+
+@demande_router.get("/presence_by_department/{user_id}")
+async def get_demande_attestation(user_id):
+    list_attes = []
+    user = db["users"].find_one({"_id":ObjectId(user_id)})
+    print(user)
+    response = db["demande_presence"].find({"departement":user["departement"]})
+    for attes in response:
+        attes['_id']=str(attes['_id'])
+        # if attes["enseignant"]  :
+        #     attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"]
+        # else:
+        #     pass
+        list_attes.append(attes)
+    return list_attes
 
 @demande_router.get("/attestation_by_enseignant/{enseignant_id}")
 async def get_demande_attestation(enseignant_id: str):
@@ -135,6 +157,43 @@ async def get_demande_attestation(enseignant_id: str):
     if not list_attes:
         raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
     return list_attes
+
+@demande_router.get("/verification_by_enseignant/{enseignant_id}")
+async def verification_by_enseignant(enseignant_id: str):
+    list_attes = []
+    # Convert enseignant_id to ObjectId
+    # Query documents where enseignants array contains enseignant_object_id
+    response = db["demande_verification"].find({"enseignant":  enseignant_id})
+    for attes in response:
+
+        attes['_id'] = str(attes['_id'])
+        list_attes.append(attes)
+    if not list_attes:
+        raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
+    return list_attes
+
+@demande_router.put("/justif/{note}/{register_id}")
+async def upload_file(note, 
+                      register_id,
+                      justif: Optional[UploadFile] = File(None)
+       
+                ):
+    if justif:
+        with open(os.path.join("uploads", justif.filename), "wb") as buffer:
+            buffer.write(await justif.read())
+
+    
+
+    update_data = {}
+    if justif:
+        update_data["justif"] = justif.filename
+
+
+    db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {"justif": update_data["justif"],       
+        "new_note": note,
+        "status" : "validated"
+        }})
+    return True
 
 @demande_router.put("/update_status_demande/{demande_id}/{enseignant_id}")
 async def update_status_demande(demande_id, enseignant_id, update_demande: update_demande):
@@ -162,6 +221,16 @@ async def update_status_demande(demande_id, enseignant_id, update_demande: updat
     return {"message": "updated successfully"}
 
 
+@demande_router.get("/update_status_demande_bychef/{demande_id}")
+async def update_status_demande_bychef(demande_id):
+    db["demande_presence"].update_one(
+            {"_id": ObjectId(demande_id)},{
+                "$set": {"status":"validated_by_departement"}
+            }
+            
+            )
+    return {"message": "updated successfully"}
+
 @demande_router.get("/update_new_status_demande/{demande_id}")
 async def update_new_status_demande(demande_id):
     db["demande_presence"].update_one(
@@ -171,3 +240,62 @@ async def update_new_status_demande(demande_id):
         
         )
     return {"message": "done"}
+
+@demande_router.get("/notvalidate_verification/{demande_id}")
+async def notvalidate_verification(demande_id):
+    db["demande_verification"].update_one(
+        {"_id": ObjectId(demande_id)},{
+            "$set": {"status":"notvalidate"}
+        }
+        
+        )
+    return {"message": "done"}
+
+
+@demande_router.get("/affecter_damande/{demande_id}/{enseignant_id}")
+async def affecter_damande(demande_id,enseignant_id):
+    db["demande_verification"].update_one(
+        {"_id": ObjectId(demande_id)},{
+            "$set": {"enseignant":enseignant_id}
+        }
+        
+        )
+    return {"message":"demande  affecté"}
+
+
+@demande_router.get("/stats_enseignant/{enseignant_id}")
+async def affecter_damande(enseignant_id):
+    all_demande_presence_validated=[]
+    all_demande_presence_pending=[]
+    all_demande_presence=[]
+    all_demande_verification_validated=[]
+    all_demande_verification_pending=[]
+    all_demande_verification=[]
+    demande_presence = db["demande_presence"].find({"enseignants._id": {"$in": [enseignant_id]}})
+    for ee in demande_presence:
+        all_demande_presence.append(ee)
+        for ens in ee['enseignants']:
+            if ens['_id'] == enseignant_id:
+                print(ens['validated'] )
+                if ens['validated'] == True or ens['validated'] == True :
+                    all_demande_presence_validated.append(ens)
+                else:
+                    all_demande_presence_pending.append(ens)
+
+    demande_verification = db["demande_verification"].find({"enseignant":  enseignant_id})
+    for dv in demande_verification :
+        all_demande_verification.append(dv)
+        if dv['status']=='validated' or dv['status']=='notvalidate' :
+            all_demande_verification_validated.append(dv)
+        else:
+            all_demande_verification_pending.append(ee)
+
+
+
+
+    return  {"all_demande_presence_validated" :len(all_demande_presence_validated),
+             "all_demande_presence_pending":len(all_demande_presence_pending),
+             "all_demande_presence":len(all_demande_presence),
+             "all_demande_verification_validated" :len(all_demande_verification_validated),
+             "all_demande_verification_pending":len(all_demande_verification_pending),
+             "all_demande_verification":len(all_demande_verification)}

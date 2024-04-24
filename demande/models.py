@@ -35,6 +35,7 @@ class demande_verification(BaseModel):
     classe : Optional[str]
     commantaire : Optional[str]
     status : Optional[str]   = "pending"
+    enseignant : Optional[str] = ""
 
 
 class update_demande(BaseModel):

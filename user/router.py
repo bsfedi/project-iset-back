@@ -399,10 +399,10 @@ async def delete_user(user_id):
 async def get_all_enseignants(user_id,privilege):
     all_ens =[]
     user = db["users"].find_one({"_id":ObjectId(user_id)})
+
     if privilege == "directeurdepartement":
         enseignants = db["users"].find({"privilege": privilege, "departement": user['departement']})
         for ee in enseignants:
-            print(ee)
             all_ens.append(ee)
         if len(all_ens)==1:
             return {"message":"can add this privilege to tow users"}
@@ -412,7 +412,28 @@ async def get_all_enseignants(user_id,privilege):
                     "privilege":privilege}})
             return {"message":"privilege add sucessufly"}
     else:
-        useprivileger = db["users"].update_one({"_id":ObjectId(user_id)},{
+        if privilege =="nonprivilege":
+            useprivileger = db["users"].update_one({"_id":ObjectId(user_id)},{
+                "$set": {
+                    "privilege":""}})
+        else:
+            useprivileger = db["users"].update_one({"_id":ObjectId(user_id)},{
             "$set": {
                 "privilege":privilege}})
         return {"message":"privilege add sucessufly"}
+
+
+@user_router.post('/sancttion/{user_id}')
+async def add_sanction(user_id,sanction : sanction):
+    sanction.user_id =user_id
+    db['sanction'].insert_one(dict(sanction))
+    return {"message":"sanction interted sucessuflly !"}
+
+@user_router.get('/sancttion/{user_id}')
+async def get_sanction(user_id):
+    all_sanctions =[]
+    sanctions = db['sanction'].find({"user_id":user_id})
+    for san in sanctions:
+        san['_id']=str(san['_id'])
+        all_sanctions.append(san)
+    return all_sanctions

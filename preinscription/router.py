@@ -12,7 +12,7 @@ import os
 from typing import Optional
 from fastapi import UploadFile, File
 
-preregiter_router = APIRouter(tags=["User"])
+preregiter_router = APIRouter(tags=["Register"])
 # Mount a directory containing uploaded files to be served statically
 @preregiter_router.put("/personalInfo/{register_id}")
 async def register(register_id,student : student):
