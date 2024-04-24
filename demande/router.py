@@ -54,25 +54,25 @@ async def get_demande_attestation(user_id):
     return list_attes
 
     
-@demande_router.get("/attestation/{user_id}")
-async def get_demande_attestation(user_id):
-    list_attes = []
+# @demande_router.get("/attestation/{user_id}")
+# async def get_demande_attestation(user_id):
+#     list_attes = []
     
-    response = db["demande_presence"].find({"user_id": user_id})
-    for attes in response:
-        attes['_id'] = str(attes['_id'])
-        enseignants_names = []
-        for i in attes['enseignants'] :
-            ens = db["users"].find_one({"_id":ObjectId (i['_id'])})
-            if ens :
-                enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
-            else :
+#     response = db["demande_presence"].find({"user_id": user_id})
+#     for attes in response:
+#         attes['_id'] = str(attes['_id'])
+#         enseignants_names = []
+#         for i in attes['enseignants'] :
+#             ens = db["users"].find_one({"_id":ObjectId (i['_id'])})
+#             if ens :
+#                 enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
+#             else :
 
-                enseignants_names.append("unknow" +" "+ "unknow")
+#                 enseignants_names.append("unknow" +" "+ "unknow")
 
-        attes['enseignants'] = enseignants_names
-        list_attes.append(attes)
-    return list_attes
+#         attes['enseignants'] = enseignants_names
+#         list_attes.append(attes)
+#     return list_attes
 
 @demande_router.get("/validated_attestation/{user_id}")
 async def get_demande_attestation(user_id):
