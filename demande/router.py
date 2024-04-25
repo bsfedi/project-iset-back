@@ -154,8 +154,8 @@ async def get_demande_attestation(enseignant_id: str):
     for attes in response:
         attes['_id'] = str(attes['_id'])
         list_attes.append(attes)
-    if not list_attes:
-        raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
+    # if not list_attes:
+    #     raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
     return list_attes
 
 @demande_router.get("/verification_by_enseignant/{enseignant_id}")
@@ -168,8 +168,8 @@ async def verification_by_enseignant(enseignant_id: str):
 
         attes['_id'] = str(attes['_id'])
         list_attes.append(attes)
-    if not list_attes:
-        raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
+    # if not list_attes:
+    #     raise HTTPException(status_code=404, detail="No demands found for this teacher ID")
     return list_attes
 
 @demande_router.put("/justif/{note}/{register_id}")
