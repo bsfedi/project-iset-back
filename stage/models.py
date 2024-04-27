@@ -18,3 +18,24 @@ class stage(BaseModel):
     tel : Optional[str]
     email_entreprise : Optional[str]
 
+
+class stage_pfe(BaseModel):
+    user_id : str
+    entreprise : Optional[str]
+    departement : Optional[str] 
+    date_debut :  Optional[datetime] = None
+    date_fin : Optional[datetime] =None
+    responsable : str
+    type : str
+    adresse : Optional[str]
+    fax : Optional[str]  
+    tel : Optional[str]
+    email_entreprise : Optional[str]
+    project : Optional[str]
+    encadrent_externe : Optional[str]
+    email_encadrent_externe  : Optional[str]
+    tel_encadrent_externe  : Optional[str]
+    encadrant_interne : Optional[str]
+    fonctionalie :  Optional[str]
+    
+

@@ -21,6 +21,36 @@ async def add_stage(stage :stage):
     db['stage'].insert_one(dict(stage))
     return {"message":"stage added succesfully !"}
 
+@stage_router.post("/add_pfe_stage")
+async def add_stage(stage :stage_pfe ):
+    stagee = db['stage'].insert_one(dict(stage))
+    return str(stagee.inserted_id)
+
+@stage_router.post("/add_cahier_cahrge/{stage_id}")
+async def add_stage(stage_id,cahier_charge :  Optional[UploadFile] = File()  ):
+    print(stage_id,cahier_charge)
+    if cahier_charge:
+        with open(os.path.join("uploads", cahier_charge.filename), "wb") as buffer:
+            buffer.write(await cahier_charge.read())
+
+    
+
+    update_data = {}
+    print(cahier_charge.filename)
+    if cahier_charge:
+        update_data["justif"] = cahier_charge.filename
+    db["stage"].update_one({"_id": ObjectId(stage_id)}, {"$set": {"cahier_charge": update_data["justif"]}})
+    return True
+
+
+@stage_router.get('/get_stage_by_id/{satge_id}')
+async def get_stages(satge_id):
+
+    stage = db['stage'].find_one({"_id":ObjectId(satge_id)})
+    print(stage)
+    stage['_id']=str(stage['_id'])
+
+    return stage
 
 
 @stage_router.get('/get_stages/{user_id}')
@@ -28,6 +58,21 @@ async def get_stages(user_id):
     all_stages =[]
     stages = db['stage'].find({"user_id":user_id})
     for stage in stages:
+        stage['_id']=str(stage['_id'])
+        all_stages.append(stage)
+    return all_stages
+
+
+@stage_router.get('/get_stages_by_departement/{user_id}')
+async def get_stages(user_id):
+    all_stages =[]
+    departement = db['users'].find_one({"_id":ObjectId(user_id)})['departement']
+    stages = db['stage'].find({"departement":departement,"type":"stage PFE"})
+    print(stages)
+    for stage in stages:
+        stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']
+        # stage['user_id']=
+
         stage['_id']=str(stage['_id'])
         all_stages.append(stage)
     return all_stages

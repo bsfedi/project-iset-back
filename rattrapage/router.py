@@ -148,3 +148,26 @@ async def update_rattrapage(rattrapage_id,status:status):
                 
                 )
     return True
+
+
+@rattrapge_router.get("/validated_rattrapage")
+async def get_demande_attestation():
+    list_attes = []
+    response = db["rattrapage"].find({"status": "validated"})
+    for attes in response:
+        attes['_id']=str(attes['_id'])
+        list_attes.append(attes)
+    return list_attes
+
+
+@rattrapge_router.get("/validated_rattrapage/{rattrapage_id}/{status}")
+async def get_demande_attestation(status,rattrapage_id):
+    response = db["rattrapage"].update_one(
+                {"_id": ObjectId(rattrapage_id)},{
+                    "$set": {"excuted":status}
+                }
+                
+                )
+    return True
+
+

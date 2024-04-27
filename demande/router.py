@@ -117,7 +117,7 @@ async def get_demande_attestation():
 async def get_demande_attestation(user_id):
     list_attes = []
     user = db["users"].find_one({"_id":ObjectId(user_id)})
-    print(user)
+  
     response = db["demande_verification"].find({"departement":user["departement"]})
     for attes in response:
         attes['_id']=str(attes['_id'])
