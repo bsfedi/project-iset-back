@@ -115,6 +115,7 @@ async def get_demande_attestation(user_id):
         attes['_id']=str(attes['_id'])
         print(attes["enseignant_id"])
         if db["users"].find_one({"_id":ObjectId(attes["enseignant_id"] )})["departement"] == user["departement"]:
+            attes['enseignant_id']=  db["users"].find_one({"_id":ObjectId(attes["enseignant_id"] )})["first_name"] + " "+ db["users"].find_one({"_id":ObjectId(attes["enseignant_id"] )})["last_name"]
             list_attes.append(attes)
     return list_attes
 

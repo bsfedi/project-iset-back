@@ -191,7 +191,21 @@ async def upload_file(note,
 
     db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {"justif": update_data["justif"],       
         "new_note": note,
-        "status" : "validated"
+        "status" : "validated_by_enseignant"
+        }})
+    return True
+
+
+@demande_router.get("/accept_note/{register_id}")
+async def upload_file(
+                      register_id,
+
+       
+                ):
+
+    db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
+      
+        "status" :  "validated"
         }})
     return True
 
@@ -299,3 +313,54 @@ async def affecter_damande(enseignant_id):
              "all_demande_verification_validated" :len(all_demande_verification_validated),
              "all_demande_verification_pending":len(all_demande_verification_pending),
              "all_demande_verification":len(all_demande_verification)}
+
+
+@demande_router.get("/stats_student/{student_id}")
+async def affecter_damande(student_id):
+    all_demande_presence_validated=[]
+    all_demande_presence_pending=[]
+    all_demande_presence=[]
+    all_demande_verification_validated=[]
+    all_demande_verification_pending=[]
+    all_demande_verification=[]
+    demande_presence = db["demande_presence"].find({"user_id":  student_id})
+    for ee in demande_presence:
+        all_demande_presence.append(ee)
+        if ee['status']=='prete':
+
+
+            all_demande_presence_validated.append(ee)
+
+
+    demande_verification = db["demande_verification"].find({"user_id":  student_id})
+    for dv in demande_verification :
+        all_demande_verification.append(dv)
+        if dv['status']=='validated':
+            all_demande_verification_validated.append(dv)
+
+
+
+
+
+    return  {"all_demande_presence_validated" :len(all_demande_presence_validated),
+             "all_demande_presence":len(all_demande_presence),
+             "all_demande_verification_validated" :len(all_demande_verification_validated),
+             "all_demande_verification":len(all_demande_verification)}
+
+
+
+@demande_router.get('/stats_tuitionofficer')
+async def stats_tuitionofficer():
+    all_demandes_déposées = []
+
+    # Counting processed demandes
+    processed_count = db["demande_presence"].count_documents({"status": "prete"})
+
+    # Counting unprocessed demandes
+    unprocessed_count = db["demande_presence"].count_documents({"status": {"$ne": "prete"}})
+    preregistres_count = db["preregistres"].count_documents({"status": {"$ne": "NOTEXIST"}})
+    preregistres_traités_count = db["preregistres"].count_documents({"status": "VALIDATED"})
+
+
+    return {"processed_count": processed_count, "unprocessed_count": unprocessed_count,"preregistres_count":preregistres_count,"preregistres_traites_count":preregistres_traités_count}
+

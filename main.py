@@ -5,6 +5,9 @@ from user.router import user_router
 from preinscription.router import preregiter_router
 from demande.router import demande_router
 from rattrapage.router import rattrapge_router
+from stage.router import stage_router
+from directeur.router import directeur_router
+from enseignantdemande.router import enseignantdemande_router
 from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
@@ -14,6 +17,10 @@ app.include_router(user_router)
 app.include_router(preregiter_router)
 app.include_router(demande_router)
 app.include_router(rattrapge_router)
+app.include_router(stage_router)
+app.include_router(directeur_router)
+app.include_router(enseignantdemande_router)
+
 
 
 """ allows a server to indicate any origins (domain, scheme, or port) """
