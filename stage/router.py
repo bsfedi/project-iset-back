@@ -43,6 +43,15 @@ async def add_stage(stage_id,cahier_charge :  Optional[UploadFile] = File()  ):
     return True
 
 
+@stage_router.put('/update_satge/{stage_id}')
+async def update_status_pfe(stage_id,staus_satge : staus_satge):
+    db["stage"].update_one({"_id": ObjectId(stage_id)}, {"$set": {
+      
+        "status" :  staus_satge.status,
+        "commantaire":staus_satge.commantaire
+        }})
+    return True
+
 @stage_router.get('/get_stage_by_id/{satge_id}')
 async def get_stages(satge_id):
 
@@ -52,6 +61,20 @@ async def get_stages(satge_id):
 
     return stage
 
+
+@stage_router.get('/generate_lettre/{satge_id}')
+async def generate_lettre(satge_id):
+
+    stage = db['stage'].find_one({"_id":ObjectId(satge_id)})
+    user = db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})
+    chefdepartement = db['users'].find_one({"departement":stage['departement']})
+    user['_id']=str(user['_id'])
+    user['user_id']=str(user['user_id'])
+    stage['_id']=str(stage['_id'])
+    chefdepartement['_id']=str(chefdepartement['_id'])
+    
+
+    return {"stage":stage , "chefdepartement" :chefdepartement , "user":user}
 
 @stage_router.get('/get_stages/{user_id}')
 async def get_stages(user_id):

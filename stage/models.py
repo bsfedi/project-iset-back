@@ -17,6 +17,7 @@ class stage(BaseModel):
     fax : Optional[str]  
     tel : Optional[str]
     email_entreprise : Optional[str]
+    status :Optional[str] = ''
 
 
 class stage_pfe(BaseModel):
@@ -39,3 +40,6 @@ class stage_pfe(BaseModel):
     fonctionalie :  Optional[str]
     
 
+class staus_satge(BaseModel):
+    status : bool
+    commantaire : Optional[str] = ""
