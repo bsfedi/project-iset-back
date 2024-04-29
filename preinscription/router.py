@@ -1,3 +1,4 @@
+from email.mime.multipart import MIMEMultipart
 from bson import ObjectId
 from fastapi import APIRouter, Body, HTTPException
 from secuirty import *
@@ -11,6 +12,13 @@ from database import db
 import os
 from typing import Optional
 from fastapi import UploadFile, File
+import smtplib
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+gmail_user = "fedislimen98@gmail.com"
+pass_code=  "wiuijqbeodgezebw"
+from user.services import get_user_by_id
 
 preregiter_router = APIRouter(tags=["Register"])
 # Mount a directory containing uploaded files to be served statically
@@ -36,6 +44,7 @@ async def register(register_id,student : student):
                 "sexe" : student.sexe,
                 "departement" : student.departement,
                 "classe" : student.classe,
+                "situation": student.situation
                 }
 
             }
@@ -45,7 +54,7 @@ async def register(register_id,student : student):
 
 @preregiter_router.put("/student_family/{register_id}")
 async def register(register_id,student_family : student_family):    
-    preregistre = db["preregistres"].update_one({"_id":ObjectId(register_id)},{
+    preregistre = db["preregistres"].find_one_and_update({"_id":ObjectId(register_id)},{
             "$set": {
                 "family_info" :{
                 "father_name": student_family.father_name,
@@ -58,7 +67,7 @@ async def register(register_id,student_family : student_family):
 
             }
         },)
-    db["preregistres"].update_one({"_id": ObjectId(register_id)}, {
+    db["preregistres"].find_one_and_update({"_id": ObjectId(register_id)}, {
     "$set": {
         "status":"PENDING",
         "personalInfo.first_nameValidation": True,
@@ -84,6 +93,8 @@ async def register(register_id,student_family : student_family):
         "personalInfo.departementCause": "",
         "personalInfo.classeValidation": True,
         "personalInfo.classeCause": "",
+        "personalInfo.situationValidation": True,
+        "personalInfo.situationCause": "",
         "family_info.father_nameValidation": True,
         "family_info.father_nameCause": "",
         "family_info.mother_nameValidation": True,
@@ -104,6 +115,55 @@ async def register(register_id,student_family : student_family):
         "docs.transcriptsCause": ""
     }
 })
+    print(preregistre)
+    user = get_user_by_id(str(preregistre["user_id"]))
+
+    receiver = user["email"]
+    first_name = preregistre["personalInfo"]["first_name"]
+    id_user = str(user["_id"])
+    # Send password reset email
+    subject = "Depot de inscription"
+    first_name=first_name[0].upper()  + first_name[1:]
+    HTMLPart = f"""
+    Dear <b>{first_name} {preregistre["personalInfo"]["last_name"]}</b> , <br> \
+   
+    Nom : {preregistre["personalInfo"]["first_name"]}<br> \
+    Prénom : {preregistre["personalInfo"]["last_name"]}<br> \
+    Cin : {preregistre["personalInfo"]["cin"]}<br> \
+    Level : {preregistre["personalInfo"]["level"]}<br> \
+    Adresse : {preregistre["personalInfo"]["adresse"]}<br> \
+    Téléphone : {preregistre["personalInfo"]["phone"]}<br> \
+    Année : {preregistre["personalInfo"]["annee"]}<br> \
+    Departement : {preregistre["personalInfo"]["departement"]}<br> \
+    Classe : {preregistre["personalInfo"]["classe"]}<br> \
+    Situation : {preregistre["personalInfo"]["situation"]}<br> \
+    Sexe : {preregistre["personalInfo"]["sexe"]}<br> \
+    
+
+    Best regards,
+"""
+
+
+
+    try : 
+        sender_address = gmail_user
+        sender_pass = pass_code
+        mail_content = HTMLPart
+        receiver_address = user['email']
+        message = MIMEMultipart()
+        message['From'] = sender_address
+        message['To'] =   user['email']
+        message['Subject'] = subject
+        message.attach(MIMEText(mail_content, 'html'))
+        # Create SMTP session for sending the mail
+        session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+        session.starttls()  # enable security
+        session.login(sender_address, sender_pass)  # login with mail_id and password
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        return True
+    except Exception as e :
+        return False
     # Here you can process the received pre-registration data
     return {"message": "Pre-registration received successfully"}
 
@@ -215,7 +275,7 @@ async def validated_register(register_id,validation :validation):
     #         db["preregistres"].update_one({"_id":ObjectId(register_id)},{
     #             "$set": {"status":"NOTVALIDATED"}
     #         })
-    preregistre = db["preregistres"].update_one({"_id":ObjectId(register_id)},{
+    preregistre = db["preregistres"].find_one_and_update({"_id":ObjectId(register_id)},{
             "$set": {
                 
                 "personalInfo.first_nameValidation": validation.first_nameValidation,
@@ -241,6 +301,9 @@ async def validated_register(register_id,validation :validation):
                 "personalInfo.departementCause": validation.departementCause,
                 "personalInfo.classeValidation": validation.classeValidation,
                 "personalInfo.classeCause": validation.classeCause,
+                "personalInfo.situationValidation": validation.situationValidation,
+                "personalInfo.situationCause": validation.situationCause,
+                
                 "family_info.father_nameValidation": validation.father_nameValidation,
                 "family_info.father_nameCause": validation.father_nameCause,
                 "family_info.mother_nameValidation": validation.mother_nameValidation,
@@ -269,6 +332,7 @@ async def validated_register(register_id,validation :validation):
 
             }
         },)
+
     return True
 
 

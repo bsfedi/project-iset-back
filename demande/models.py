@@ -29,7 +29,7 @@ class demande_verification(BaseModel):
     type : str
     matiere : str
     datedepot : Optional[datetime]  =datetime.now()
-    note : int 
+    note : str 
     code : Optional[str] 
     departement : Optional[str] 
     classe : Optional[str]

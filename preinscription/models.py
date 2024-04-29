@@ -19,6 +19,7 @@ class student(BaseModel):
     annee : Optional[str]
     departement : Optional[str]
     classe : Optional[str]
+    situation : Optional[str]
 
 class student_family(BaseModel):
     father_name : Optional[str]
@@ -84,6 +85,8 @@ class validation(BaseModel):
     departementCause :Optional[str]
     classeValidation : Optional[bool] 
     classeCause :Optional[str]
+    situationValidation : Optional[bool]
+    situationCause :Optional[str]
     note1Validation : Optional[bool] = True
     note1Cause :Optional[str] = ""
     note2Validation : Optional[bool]  = True

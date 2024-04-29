@@ -1,7 +1,12 @@
 
+from bson import ObjectId
 from fastapi import HTTPException
 from database import db
 import argon2
+
+
+ph = argon2.PasswordHasher()
+
 
 def signup(user):
     # Create a new dictionary to store the user data
@@ -48,6 +53,37 @@ def get_all_users():
         return {
             "message": f"{str(ex)}"
         }  
+    
+def get_user_by_id(uid):
+    # Retrieve a user from the database based on the given user ID (uid)
+    user = db["users"].find_one(dict(_id=ObjectId(uid)))
+
+    # If no user is found with the given user ID, raise an HTTPException with a 404 status code
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Return the user dictionary
+    return user
+
+def update_new_password(user_id, old_password, new_password):
+    user = get_user_by_id(user_id)
+    try:
+        # Verify old password
+        verify_password(user["password"], old_password)
+        # Hash the new password
+        hashed_password = ph.hash(new_password)
+        # Update the password in the database
+        update_password(user_id, hashed_password)
+        return True
+    except:
+        # Raise an HTTPException with appropriate error message if old password is incorrect
+        raise HTTPException(status_code=426, detail="Your old password is incorrect")
+    
+def update_password(user_id, password):
+    response = db["users"].update_one(
+        {"_id": ObjectId(user_id)}, {"$set": {"password": password}}
+    )
+    return response
 
 def verify_password(hashed_password, password):
     try:

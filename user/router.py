@@ -107,8 +107,182 @@ async def sign_up(user: New_user):
         return False
     
 
+@user_router.post(
+    "/send_email/{user_id}",
+)
+async def sign_up(user_id,send_email: send_email
+):
+    """
+    Validates a password format based on specified requirements:
+    - At least 8 characters long
+    - Contains at least one uppercase letter
+    - Contains at least one lowercase letter
+    - Contains at least one digit
+    - Contains at least one special character
+    """
+    
+    try:
+        user =db["users"].find_one({"_id": ObjectId(user_id)})      
+        sender_address = gmail_user
+        sender_pass = pass_code
+        receiver_address = user['email']
+        message = MIMEMultipart()
+        message["From"] = sender_address
+        message["To"] = user['email']
+        message["Subject"] = send_email.subject
+
+                            # Attach the additional information and HTML table to the email
+        message.attach(MIMEText(send_email.message, "html"))
+
+                            # Create SMTP session for sending the mail
+        session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
+        session.starttls()  # enable security
+        session.login(sender_address, sender_pass)  # login with mail_id and password
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        response = db["users"].insert_one(dict(user))
+        return {"response":"user added sucessfully"}
+    except Exception as e:
+        return False
+
+@user_router.put(
+    "/users/set_password/{user_id}",
+)
+async def set_password(user_password: User_password, user_id):
+    """
+    Update the password of a user in the database based on their user_id.
+
+    Args:
+        user_id (str): The user_id of the user whose password needs to be updated.
+        password (str): The new password to be set.
+
+    Returns:
+        pymongo.results.UpdateResult: The result of the update operation.
+    """
 
 
+    hashed_password = ph.hash(user_password.password)
+
+    # Update the password in the database
+
+    update_password(user_id, hashed_password)
+    return {"message": "password updated successfully !"}
+
+
+
+
+
+EMAIL_URL = "http://localhost:4200/"
+@user_router.post(
+    "/auth/forgot-password",
+)
+async def reset_password(user: User_email):
+    """
+    Reset password for a user by email address.
+
+    Args:
+        user (User_email): User_email object containing the email address of the user.
+
+    Returns:
+        dict: Dictionary containing a success message indicating that an email has been sent for password reset.
+
+    Raises:
+        HTTPException: If the user does not exist or if there is an error sending the email.
+
+    """
+    # Get user by email
+    user = get_user_by_email(user.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="user does not exist!")
+
+    receiver = user["email"]
+    first_name = user["first_name"]
+    id_user = str(user["_id"])
+    # Send password reset email
+    subject = "Password reset request"
+    first_name=first_name[0].upper()  + first_name[1:]
+    HTMLPart = f"""
+    Dear <b>{first_name}</b> , <br> \
+    We have received a request to reset the password associated with this email address. <br> \
+    If you did not make this request, please ignore this email and your account will remain secure.<br> \
+    If you did request a password reset, please verify your email address by clicking on the link below: <br> \
+   <a href="{EMAIL_URL}change-mot-de-passe/{id_user}"> Set password </a>.<br>\
+    Please note that this link will expire in 24 hours for security reasons. <br>\
+    Best regards,
+"""
+
+
+
+    try : 
+        sender_address = gmail_user
+        sender_pass = pass_code
+        mail_content = HTMLPart
+        receiver_address = receiver
+        message = MIMEMultipart()
+        message['From'] = sender_address
+        message['To'] = receiver
+        message['Subject'] = subject
+        message.attach(MIMEText(mail_content, 'html'))
+        # Create SMTP session for sending the mail
+        session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+        session.starttls()  # enable security
+        session.login(sender_address, sender_pass)  # login with mail_id and password
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        return True
+    except Exception as e :
+        return False
+    
+
+
+@user_router.put(
+    "/users/update_password/{user_id}",)
+async def updatee_password(
+    user_id, password: new_password_user
+):
+    """
+    API endpoint for updating the password of a user.
+
+    Args:
+        user_id (str): ID of the user to update.
+        password (new_password_user): new_password_user object containing old and new password.
+        token (dict): Token required for authentication.
+
+    Returns:
+        dict: Dictionary containing a success message.
+
+    """
+    response = update_new_password(
+        user_id, password.old_password, password.new_password
+    )
+    if response == True:
+        return {"message": "Your password changed successfully"}
+
+
+
+@user_router.get('/forget_password/{email}')
+async def forget_mot_depasse(email):
+    try:       
+        sender_address = gmail_user
+        sender_pass = pass_code
+        receiver_address = email
+        message = MIMEMultipart()
+        message["From"] = sender_address
+        message["To"] = email
+        message["Subject"] = subject
+
+                            # Attach the additional information and HTML table to the email
+        message.attach(MIMEText(f"<b>  votre {user.code} et le mot de passe est {password} <b> ", "html"))
+
+                            # Create SMTP session for sending the mail
+        session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port
+        session.starttls()  # enable security
+        session.login(sender_address, sender_pass)  # login with mail_id and password
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        return {"response":"user added sucessfully"}
+    except Exception as e:
+        return False
 
 @user_router.post("/upload_users/{type}")
 async def upload_file(type,file: UploadFile = File(...)):

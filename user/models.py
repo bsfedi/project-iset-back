@@ -41,6 +41,20 @@ class student(BaseModel):
     brith_date:Optional[date] =""
     sexe : Optional[str] =""
 
+class User_email(BaseModel):
+    email: EmailStr
+
+
+
+class User_password(BaseModel):
+    password: str
+
+
+class send_email(BaseModel):
+    subject : str
+    message :str
+
+
 class student_family(BaseModel):
     father_name : Optional[str] =""
     mother_name: Optional[str] =""
@@ -56,3 +70,6 @@ class sanction(BaseModel):
 
 
     
+class new_password_user(BaseModel):
+    old_password: str
+    new_password: str
