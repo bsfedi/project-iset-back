@@ -52,6 +52,15 @@ async def update_status_pfe(stage_id,staus_satge : staus_satge):
         }})
     return True
 
+@stage_router.put('/note_satge/{stage_id}')
+async def update_status_pfe(stage_id,stage_note : stage_note):
+    db["stage"].update_one({"_id": ObjectId(stage_id)}, {"$set": {
+      
+        "note" :  stage_note.note,
+        }})
+    return True
+
+
 @stage_router.get('/get_stage_by_id/{satge_id}')
 async def get_stages(satge_id):
 
@@ -90,7 +99,7 @@ async def get_stages(user_id):
 async def get_stages(user_id):
     all_stages =[]
     departement = db['users'].find_one({"_id":ObjectId(user_id)})['departement']
-    stages = db['stage'].find({"departement":departement,"type":"stage PFE"})
+    stages = db['stage'].find()
     print(stages)
     for stage in stages:
         stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']

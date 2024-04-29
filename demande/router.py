@@ -122,7 +122,7 @@ async def get_demande_attestation(user_id):
     for attes in response:
         attes['_id']=str(attes['_id'])
         if attes["enseignant"]  :
-            attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"]
+            attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["last_name"]
         else:
             pass
         list_attes.append(attes)

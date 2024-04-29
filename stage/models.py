@@ -43,3 +43,6 @@ class stage_pfe(BaseModel):
 class staus_satge(BaseModel):
     status : bool
     commantaire : Optional[str] = ""
+
+class stage_note(BaseModel):
+    note : str
