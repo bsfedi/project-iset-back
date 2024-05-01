@@ -119,6 +119,17 @@ async def get_demande_attestation(user_id):
             list_attes.append(attes)
     return list_attes
 
+@rattrapge_router.get('/get_historique/{rattrapage_id}/{date}/{classe}')
+async def get_historique(rattrapage_id,date,classe):
+    rattrapge_data = db['rattrapge'].find_one({"_id": ObjectId(rattrapage_id)})
+    print(rattrapge_data)
+    rattrapge_data['_id'] =str(rattrapge_data['_id'])
+    return rattrapge_data
+
+
+
+
+
 @rattrapge_router.get("/rattrapage/{enseignant_id}")
 async def get_demande_attestation(enseignant_id):
     list_attes = []

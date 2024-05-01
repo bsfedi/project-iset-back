@@ -445,3 +445,16 @@ async def get_preregister_by_user_id(user_id):
     preregister['_id']=str(preregister['_id'])
     preregister['user_id']=str(preregister['user_id'])
     return preregister
+
+
+@preregiter_router.post("/orientation")
+async def orientatio(orientation: orientation):
+    db['orientation'].insert_one(dict(orientation))
+    return True
+
+@preregiter_router.get("/orientation/{user_id}")
+async def get_orientationr_by_user_id(user_id):
+    orientation = db["orientation"].find_one({"user_id":ObjectId(user_id)})
+    print(orientation)
+    orientation['_id']=str(orientation['_id'])
+    return orientation

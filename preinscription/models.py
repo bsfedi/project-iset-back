@@ -91,3 +91,12 @@ class validation(BaseModel):
     note1Cause :Optional[str] = ""
     note2Validation : Optional[bool]  = True
     note2Cause :Optional[str] = ""
+
+
+class orientation(BaseModel):
+    user_id : str
+    choix1:str
+    choix2:str
+    choix3:str
+    resultat : Optional[str] = ""
+    status :Optional[str] = "pending"

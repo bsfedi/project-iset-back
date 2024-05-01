@@ -18,6 +18,8 @@ class stage(BaseModel):
     tel : Optional[str]
     email_entreprise : Optional[str]
     status :Optional[str] = ''
+    classe : str
+
 
 
 class stage_pfe(BaseModel):
@@ -38,6 +40,7 @@ class stage_pfe(BaseModel):
     tel_encadrent_externe  : Optional[str]
     encadrant_interne : Optional[str]
     fonctionalie :  Optional[str]
+    classe : Optional[str]
     
 
 class staus_satge(BaseModel):
