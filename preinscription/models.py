@@ -98,5 +98,6 @@ class orientation(BaseModel):
     choix1:str
     choix2:str
     choix3:str
+    choix4:Optional[str] = ""
     resultat : Optional[str] = ""
     status :Optional[str] = "pending"

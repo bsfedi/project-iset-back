@@ -24,5 +24,9 @@ class rattrapage(BaseModel):
 class status(BaseModel):
     status :str
     motif : Optional[str]= ""
+    date :str
+    classe :str
+    module:str
+    horaire :str
     salle : Optional[str]= ""
-    horaire: Optional[str]= ""
+    new_horaire: Optional[str]= ""

@@ -177,7 +177,34 @@ async def get_salles():
         all_salles.append(salle)
     return all_salles
 
+
+
+@directeur_router.get("/get_salles/{date}/{inputHoraire}")
+async def get_salles(date: str,inputHoraire:str):
+    all_salles = []
     
+    # Get all salles
+    salles = db['salles'].find()
+      
+    # Get rattrapage data for the specified date
+    rattrapge_data = db['rattrapage'].find({  "data": {
+            "$elemMatch": {
+                "date": date,
+                "inputHoraire": inputHoraire
+            }
+        }})
+    salles_to_remove = set()
+    for rattrapage in rattrapge_data:
+
+        salles_to_remove.add(rattrapage['salle'])
+    
+    # Iterate through salles and filter out those present in rattrapge for the specified date
+    for salle in salles:
+        salle['_id'] = str(salle['_id'])
+        if salle['code'] not in salles_to_remove:
+            all_salles.append(salle)
+    
+    return all_salles
 # Update
 @directeur_router.put("/update_salles/{salles_id}")
 async def update_salles(salles_id: str, salles: salles):
