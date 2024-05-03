@@ -454,7 +454,19 @@ async def orientatio(orientation: orientation):
 
 @preregiter_router.get("/orientation/{user_id}")
 async def get_orientationr_by_user_id(user_id):
-    orientation = db["orientation"].find_one({"user_id":ObjectId(user_id)})
+    orientation = db["orientation"].find_one({"user_id":user_id})
     print(orientation)
     orientation['_id']=str(orientation['_id'])
+    return orientation
+
+
+@preregiter_router.get("/orientation/{user_id}/{parcours}")
+async def get_orientationr_by_user_id(user_id,parcours):
+    orientation = db["orientation"].update_one({"user_id":user_id},
+            {"$set": {       
+        "resultat": parcours,
+        "status": "validated",
+        }})
+
+
     return orientation
