@@ -112,8 +112,8 @@ async def get_students_module(module_id):
         
         etudiant['user_id'] = str(etudiant['user_id'])
         etudiant['_id'] = str(etudiant['_id'])
-        print()
-        absences = db["student_absence"].find_one({"user_id": etudiant['user_id'], "module_id": ObjectId(module_id)})
+        print(etudiant['user_id'], module_id)
+        absences = db["student_absence"].find_one({"user_id": etudiant['user_id'], "module_id": module_id})
         print(absences)
         nb_absence = 0  # Initialize absence counter for the student
         if absences:  # Check if absences are found
@@ -121,9 +121,39 @@ async def get_students_module(module_id):
                 # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
                 if "S" + str(i) in absences and absences["S" + str(i)] == "1":
                     nb_absence += 1  # Increment absence count if absence recorded for the session
-
+                print(nb_absence)
         etudiant['nb_absence'] = nb_absence  # Add absence count to the student object
         all_students.append(etudiant)      
     return all_students
 
+@absence_router.get("/get_absences/{student_id}")
+async def get_absences(student_id):
+    all_absences = []
+    absences = db["student_absence"].find({"user_id":student_id })
+    for ab in absences :
+        ab['_id']=str(ab['_id'])
+        ab["module_id"] =  db['modules'].find_one({"_id":ObjectId(ab["module_id"])})['code']
+        nb_absence = 0  # Initialize absence counter for the student
+
+        for i in range(1, 13):
+                    # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
+            if "S" + str(i) in ab and ab["S" + str(i)] == "1":
+                nb_absence += 1  # Increment absence count if absence recorded for the session
+        ab['nb_absence'] = nb_absence  # Add absence count to the student object
+        all_absences.append(ab)  
+    return all_absences
+
+@absence_router.get('/get_classe_module_by_dep/{departement}')
+async  def  get_classe_module_by_dep(departement):
+    all_calsse = []
+    all_modules =[]
+    modules = db['modules'].find({"departement":departement})
+    for module in modules:
+        module['_id'] =str(module['_id'])
+        all_modules.append(module)
+    classes = db['classes'].find({"departement":departement})
+    for classe in classes:
+        classe['_id'] =str(classe['_id'])
+        all_calsse.append(classe)
+    return {"all_calsse" :all_calsse , "all_modules":all_modules}
 

@@ -315,37 +315,81 @@ async def affecter_damande(enseignant_id):
              "all_demande_verification":len(all_demande_verification)}
 
 
+
+from typing import Dict
+
+
 @demande_router.get("/stats_student/{student_id}")
 async def affecter_damande(student_id):
-    all_demande_presence_validated=[]
-    all_demande_presence_pending=[]
-    all_demande_presence=[]
-    all_demande_verification_validated=[]
-    all_demande_verification_pending=[]
-    all_demande_verification=[]
+    all_demande_presence_validated = []
+    all_demande_presence = []
+    all_demande_verification_validated = []
+    all_demande_verification = []
+    presence_status_count = {}
+    verification_status_count = {}
+    
     demande_presence = db["demande_presence"].find({"user_id":  student_id})
     for ee in demande_presence:
         all_demande_presence.append(ee)
-        if ee['status']=='prete':
-
-
+        status = ee['status']
+        if status in ['prete', 'validated']:
             all_demande_presence_validated.append(ee)
-
-
+        presence_status_count[status] = presence_status_count.get(status, 0) + 1
+    
     demande_verification = db["demande_verification"].find({"user_id":  student_id})
-    for dv in demande_verification :
+    for dv in demande_verification:
         all_demande_verification.append(dv)
-        if dv['status']=='validated':
+        status = dv['status']
+        if status == 'validated':
             all_demande_verification_validated.append(dv)
+        verification_status_count[status] = verification_status_count.get(status, 0) + 1
+    
+    total_presence = len(all_demande_presence)
+    validated_presence = len(all_demande_presence_validated)
+    total_verification = len(all_demande_verification)
+    validated_verification = len(all_demande_verification_validated)
+    
+    presence_percentage = round((validated_presence / total_presence) * 100, 2) if total_presence != 0 else 0
+    verification_percentage = round((validated_verification / total_verification) * 100, 2) if total_verification != 0 else 0
+    
+    presence_status_percentages = {status: round((count / total_presence) * 100, 2) for status, count in presence_status_count.items()}
+    verification_status_percentages = {status: round((count / total_verification) * 100, 2) for status, count in verification_status_count.items()}
+    
+    # Calculate the percentage of "prete" as "validated" for presence demands
+    prete_percentage = round((presence_status_count.get('prete', 0) / total_presence) * 100, 2) if total_presence != 0 else 0
+    presence_status_percentages['validated'] = round(presence_status_percentages.get('validated', 0) + prete_percentage, 2)
+    del presence_status_percentages['prete']
+    
+    return {
+        "all_demande_presence_validated": len(all_demande_presence_validated),
+        "all_demande_presence": total_presence,
+        "presence_validation_percentage": presence_percentage,
+        "presence_status_percentages": presence_status_percentages,
+        "all_demande_verification_validated": len(all_demande_verification_validated),
+        "all_demande_verification": total_verification,
+        "verification_validation_percentage": verification_percentage,
+        "verification_status_percentages": verification_status_percentages
+    }
+
+
+@demande_router.get('/all_stats/{category}')
+async def all_stats(category):
+    counte_fp = []
+    count_at =[]
+    count_conge =[]
+    if category == 'enseignant':
+        # count_conge = db['absence'].count_documents({})
+        demandes = db['enseignant_demande'].find()
+        for dem in demandes:
+            if dem["type"]=='FP':
+                counte_fp.append(dem)
+            elif  dem["type"]=='AT':
+                count_at.append(dem)
+            else:
+                count_conge.append(dem)
 
 
 
-
-
-    return  {"all_demande_presence_validated" :len(all_demande_presence_validated),
-             "all_demande_presence":len(all_demande_presence),
-             "all_demande_verification_validated" :len(all_demande_verification_validated),
-             "all_demande_verification":len(all_demande_verification)}
 
 
 

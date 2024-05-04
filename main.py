@@ -9,6 +9,7 @@ from stage.router import stage_router
 from directeur.router import directeur_router
 from enseignantdemande.router import enseignantdemande_router
 from absences.router import absence_router
+from stats.router import stats_router
 from fastapi.staticfiles import StaticFiles
 app = FastAPI()
 
@@ -22,6 +23,8 @@ app.include_router(stage_router)
 app.include_router(directeur_router)
 app.include_router(enseignantdemande_router)
 app.include_router(absence_router)
+app.include_router(stats_router)
+
 
 
 

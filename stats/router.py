@@ -15,7 +15,7 @@ stats_router = APIRouter(tags=["stats"])
 
 
 
-@stats_router.get('/students_module/{module_id}')
+@stats_router.get('/statistique_student/{module_id}')
 async def affecter_demande(module_id: str):
     all_demande_presence_validated = []
     all_demande_presence_pending = []

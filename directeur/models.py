@@ -6,20 +6,20 @@ from typing import Optional
 
 
 class parcours(BaseModel):
-   
+    departement : Optional[str] = ""
     libelle : str
     code : str
 
 
 class classes(BaseModel):
-
+    departement : Optional[str] = ""
     niveau : str
     parcour : str
     code : str
 
 
 class modules(BaseModel):
-
+    departement : Optional[str] = ""
     niveau :str
     parcours : str
     code: str
