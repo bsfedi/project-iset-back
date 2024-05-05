@@ -399,16 +399,79 @@ async def all_stats(category):
 
 @demande_router.get('/stats_tuitionofficer')
 async def stats_tuitionofficer():
-    all_demandes_déposées = []
+    # Counting processed demands
+    demande_count = db["demande_presence"].count_documents({})
+    preregistres_count = db["preregistres"].count_documents({})
+    enseignant_demande = db["enseignant_demande"].count_documents({})
+    rattrapage_count = db["rattrapage"].count_documents({})
 
-    # Counting processed demandes
-    processed_count = db["demande_presence"].count_documents({"status": "prete"})
+    # Calculate total count
+    total_count = demande_count + preregistres_count + enseignant_demande + rattrapage_count
 
-    # Counting unprocessed demandes
-    unprocessed_count = db["demande_presence"].count_documents({"status": {"$ne": "prete"}})
-    preregistres_count = db["preregistres"].count_documents({"status": {"$ne": "NOTEXIST"}})
-    preregistres_traités_count = db["preregistres"].count_documents({"status": "VALIDATED"})
+    # Calculate percentages for overall categories
+    preregistres_percentage = round((preregistres_count / total_count) * 100, 2)
+    demande_percentage = round((demande_count / total_count) * 100, 2)
+    enseignant_demande_percentage = round((enseignant_demande / total_count) * 100, 2)
+    rattrapage_percentage = round((rattrapage_count / total_count) * 100, 2)
 
+    # Calculate statuses percentages for preregistres collection
+    validated_preregistres_count = db["preregistres"].count_documents({"status": "VALIDATED"})
+    pending_preregistres_count = db["preregistres"].count_documents({"status": "PENDING"})
+    invalidated_preregistres_count = db["preregistres"].count_documents({"status": "INVALIDATED"})
+    # Calculate percentages for statuses
+    validated_preregistres_percentage = round((validated_preregistres_count / preregistres_count) * 100, 2) if preregistres_count != 0 else 0
+    pending_preregistres_percentage = round((pending_preregistres_count / preregistres_count) * 100, 2) if preregistres_count != 0 else 0
+    invalidated_preregistres_percentage = round((invalidated_preregistres_count / preregistres_count) * 100, 2) if preregistres_count != 0 else 0
 
-    return {"processed_count": processed_count, "unprocessed_count": unprocessed_count,"preregistres_count":preregistres_count,"preregistres_traites_count":preregistres_traités_count}
+    # Similarly, calculate statuses percentages for other collections
+    # For example, for the demande_presence collection
+    validated_demande_count = db["demande_presence"].count_documents({"status": "prete"})
+    pending_demande_count = db["demande_presence"].count_documents({"status": "pending"}) +  db["demande_presence"].count_documents({"status": "validated_by_departement"})
 
+    # Calculate percentages for statuses in demande_presence collection
+
+    validated_demande_percentage = round((validated_demande_count / demande_count) * 100, 2) if demande_count != 0 else 0
+    pending_demande_percentage = round((pending_demande_count / demande_count) * 100, 2) if demande_count != 0 else 0
+
+    return {
+        "preregistres_count": preregistres_count,
+        "preregistres_percentage": preregistres_percentage,
+        "demande_count": demande_count,
+        "demande_percentage": demande_percentage,
+        "enseignant_demande": enseignant_demande,
+        "enseignant_demande_percentage": enseignant_demande_percentage,
+        "rattrapage_count": rattrapage_count,
+        "rattrapage_percentage": rattrapage_percentage,
+        "validated_preregistres_count": validated_preregistres_count,
+        "validated_preregistres_percentage": validated_preregistres_percentage,
+        "pending_preregistres_count": pending_preregistres_count,
+        "pending_preregistres_percentage": pending_preregistres_percentage,
+        "invalidated_preregistres_count": invalidated_preregistres_count,
+        "invalidated_preregistres_percentage": invalidated_preregistres_percentage,
+        "validated_demande_count" :validated_demande_count,
+         "pending_demande_count" :pending_demande_count,
+        "validated_demande_percentage": validated_demande_percentage ,
+        "pending_demande_percentage":pending_demande_percentage,
+        "total_count":total_count
+
+        # Add similar counts and percentages for other collections and statuses
+    }
+@demande_router.get('/get_demandes_fiche')
+async def get_demandes_fiche():
+
+    fiche_demandes = []
+        # count_conge = db['absence'].count_documents({})
+    demandes = db['enseignant_demande'].find()
+    for dem in demandes:
+        dem['_id']=str(dem['_id'])
+        if dem["type"]=='FP':
+            fiche_demandes.append(dem)
+    return fiche_demandes
+
+@demande_router.get('/update_status_fiche/{ficher_id}')
+async def update_status_fiche(ficher_id):
+    db['enseignant_demande'].update_one({"_id":ObjectId(ficher_id)},{
+        "$set":{
+            "status" : "prete"
+        }
+    })
