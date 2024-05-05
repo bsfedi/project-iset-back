@@ -120,6 +120,24 @@ async def get_modules(module_id: str):
         modules['_id']=str(modules['_id'])
         return modules
 
+
+@directeur_router.get("/get_module_bydep/{departement}")
+async def get_modules(departement: str):
+    all_modules = []
+    modules = db['modules'].find({"departement": departement})
+    for m in modules :
+        m['_id']=str(m['_id'])
+        all_modules.append(m)
+    return all_modules
+
+@directeur_router.get("/get_module_bytype/{type}/{departement}")
+async def get_modules(type: str,departement :str):
+    all_modules = []
+    modules = db['modules'].find({"type": type,"departement":departement})
+    for m in modules :
+        m['_id']=str(m['_id'])
+        all_modules.append(m)
+    return all_modules
 # Read
 @directeur_router.get("/get_modules")
 async def get_modules():

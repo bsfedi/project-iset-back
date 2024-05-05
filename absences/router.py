@@ -22,25 +22,26 @@ def signup(modules: modules):
         for classe in modules.classe:
             classe_code = db["classes"].find_one({'_id': ObjectId(classe)})['code']
             etudiant = db["preregistres"].find_one({"personalInfo.classe": classe_code})
-            db['student_absence'].insert_one({
-                "user_id":str(etudiant['user_id']),
-                "module_id": module,
-                "classe_id": classe,
-                "S1": "",
-                "S2": "",
-                "S3": "",
-                "S4": "",
-                "S5": "",
-                "S6": "",
-                "S7": "",
-                "S8": "",
-                "S9": "",
-                "S10": "",
-                "S11": "",
-                "S12": "",
-                "reclamation" : []
+            if etudiant :
+                db['student_absence'].insert_one({
+                    "user_id":str(etudiant['user_id']),
+                    "module_id": module,
+                    "classe_id": classe,
+                    "S1": "",
+                    "S2": "",
+                    "S3": "",
+                    "S4": "",
+                    "S5": "",
+                    "S6": "",
+                    "S7": "",
+                    "S8": "",
+                    "S9": "",
+                    "S10": "",
+                    "S11": "",
+                    "S12": "",
+                    "reclamation" : []
 
-            })
+                })
 
 
     if response:
@@ -73,31 +74,38 @@ async def  get_absences_by_classe(classe_id):
     return(all_absences)
 
 @absence_router.get('/get_classe_by_module/{module_id}')
-async def get_modules_by_enseignant(module_id: str):
+async def get_classe_by_module(module_id: str):
+    unique_classes = set()  # Initialize an empty set to store unique class IDs
     all_classe = []
     modules = db["absences"].find({'module': {'$in': [module_id]}})
     for module in modules:
         module['_id'] = str(module['_id'])
         for classe_id in module['classe']:
-            classe = db["classes"].find_one({'_id': ObjectId(classe_id)})
-            if classe:
-                classe['_id'] = str(classe['_id'])
-                all_classe.append(classe)
+            if classe_id not in unique_classes:  # Check if class ID is already in the set
+                unique_classes.add(classe_id)  # If not, add it to the set
+                classe = db["classes"].find_one({'_id': ObjectId(classe_id)})
+                if classe:
+                    classe['_id'] = str(classe['_id'])
+                    all_classe.append(classe)
     return all_classe
+
 
 
 @absence_router.get('/get_modules_by_enseignant/{enseignant_id}')
 async def get_modules_by_enseignant(enseignant_id: str):
+    unique_modules = set()  # Initialize an empty set to store unique module IDs
     all_classe = []
     modules = db["absences"].find({'enseignant': {'$in': [enseignant_id]}})
     for module in modules:
         for m in module['module']:
-        
-            m = db["modules"].find_one({'_id': ObjectId(m)})
-            m['_id'] = str(m['_id'])
-
-            all_classe.append(m)
+            m_id = str(m)
+            if m_id not in unique_modules:  # Check if module ID is already in the set
+                unique_modules.add(m_id)  # If not, add it to the set
+                m_doc = db["modules"].find_one({'_id': ObjectId(m_id)})
+                m_doc['_id'] = str(m_doc['_id'])
+                all_classe.append(m_doc)
     return all_classe
+
 
 @absence_router.get('/students_module/{module_id}')
 async def get_students_module(module_id):

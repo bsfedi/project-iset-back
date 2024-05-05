@@ -438,6 +438,8 @@ async def get_all_validated_preregister():
             "message": f"{str(ex)}"
         }  # Return an error message with exception details if an exception occurs
 
+
+
 @preregiter_router.get("/get_preregister/{user_id}")
 async def get_preregister_by_user_id(user_id):
     preregister = db["preregistres"].find_one({"user_id":ObjectId(user_id) })
@@ -455,8 +457,8 @@ async def orientatio(orientation: orientation):
 @preregiter_router.get("/orientation/{user_id}")
 async def get_orientationr_by_user_id(user_id):
     orientation = db["orientation"].find_one({"user_id":user_id})
-    print(orientation)
-    orientation['_id']=str(orientation['_id'])
+    if orientation :
+        orientation['_id']=str(orientation['_id'])
     return orientation
 
 

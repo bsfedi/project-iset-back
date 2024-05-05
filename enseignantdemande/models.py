@@ -14,6 +14,7 @@ class demande(BaseModel):
 
 class conge(BaseModel):
     user_id : str
+    Adresse : Optional[str]=""
     type:str
     status : Optional[str] = "pending"
     type_conge : str

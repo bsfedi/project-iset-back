@@ -122,7 +122,11 @@ async def get_demande_attestation(user_id):
     for attes in response:
         attes['_id']=str(attes['_id'])
         if attes["enseignant"]  :
-            attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["last_name"]
+            if db["users"].find_one({"_id":ObjectId(attes["enseignant"] )}) :
+                attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["last_name"]
+            else:
+                attes["enseignant"] = "unknow"
+
         else:
             pass
         list_attes.append(attes)
@@ -358,7 +362,7 @@ async def affecter_damande(student_id):
     # Calculate the percentage of "prete" as "validated" for presence demands
     prete_percentage = round((presence_status_count.get('prete', 0) / total_presence) * 100, 2) if total_presence != 0 else 0
     presence_status_percentages['validated'] = round(presence_status_percentages.get('validated', 0) + prete_percentage, 2)
-    del presence_status_percentages['prete']
+
     
     return {
         "all_demande_presence_validated": len(all_demande_presence_validated),
