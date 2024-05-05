@@ -17,7 +17,7 @@ class stage(BaseModel):
     fax : Optional[str]  
     tel : Optional[str]
     email_entreprise : Optional[str]
-    status :Optional[str] = ''
+    status :Optional[str] = True
     classe : str
 
 

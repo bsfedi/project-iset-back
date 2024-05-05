@@ -462,6 +462,67 @@ async def get_orientationr_by_user_id(user_id):
     return orientation
 
 
+from collections import defaultdict
+
+@preregiter_router.get('/orientation_by_dep/{departement}')
+async def get_orientation(departement):
+  
+    all_orientation = []
+    orientation = db["orientation"].find()
+    
+    # Dictionary to store result counts
+    result_counts = defaultdict(int)
+    
+    for orie in orientation:
+        print(orie)
+        orie['_id'] = str(orie['_id'])
+        preregister = db["preregistres"].find_one({"user_id":ObjectId(orie['user_id']) })
+        print(preregister)
+        if preregister['personalInfo']['departement'] == departement:
+            orie['student'] = preregister['personalInfo']['first_name'] + ' '+ preregister['personalInfo']['last_name']
+            all_orientation.append(orie)
+            # Counting results
+            result = orie.get('resultat', '')
+            if result:
+                result_counts[result] += 1
+                
+    # Convert result_counts defaultdict to a regular dictionary
+    result_counts = dict(result_counts)
+    
+    return {
+        "orientations": all_orientation,
+        "result_counts": result_counts
+    }
+
+
+@preregiter_router.get('/orientations')
+async def get_orientation():
+  
+    all_orientation = []
+    orientation = db["orientation"].find()
+    
+    # Dictionary to store result counts
+    result_counts = defaultdict(int)
+    
+    for orie in orientation:
+
+        orie['_id'] = str(orie['_id'])
+        preregister = db["preregistres"].find_one({"user_id":ObjectId(orie['user_id']) })
+
+        orie['departement']= preregister['personalInfo']['departement']
+        orie['student'] = preregister['personalInfo']['first_name'] + ' '+ preregister['personalInfo']['last_name']
+        all_orientation.append(orie)
+
+                
+
+    
+    return all_orientation
+
+
+
+
+
+
 @preregiter_router.get("/orientation/{user_id}/{parcours}")
 async def get_orientationr_by_user_id(user_id,parcours):
     orientation = db["orientation"].update_one({"user_id":user_id},
@@ -471,4 +532,4 @@ async def get_orientationr_by_user_id(user_id,parcours):
         }})
 
 
-    return orientation
+    return True
