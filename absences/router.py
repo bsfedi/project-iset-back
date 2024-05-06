@@ -64,7 +64,6 @@ async def  get_absences_by_classe(classe_id):
     all_absences = []
     all_students = db['student_absence'].find({'classe_id':classe_id})
     for student in all_students:
-        print(student)
         etudiant = db["preregistres"].find_one({"user_id":ObjectId(student['user_id']) })
         etudiant['user_id'] =str(etudiant['user_id'] )
         etudiant['_id'] =str(etudiant['_id'] )
@@ -88,6 +87,8 @@ async def get_classe_by_module(module_id: str):
                     classe['_id'] = str(classe['_id'])
                     all_classe.append(classe)
     return all_classe
+
+
 
 
 

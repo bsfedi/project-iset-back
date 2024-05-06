@@ -87,7 +87,22 @@ async def get_classes():
         all_classes.append(classe)
     return all_classes
 
-    
+
+# Read
+@directeur_router.get("/get_classes/{departement}")
+async def get_classes(departement):
+    all_classes =[]
+    classes = db['classes'].find({"departement":departement})
+    for classe in classes:
+        if db['parcours'].find_one({"_id": ObjectId(classe['parcour'])}):
+            classe['parcour'] = db['parcours'].find_one({"_id": ObjectId(classe['parcour'])})["libelle"] 
+        else:
+            classe['parcour'] = "" 
+
+        classe['_id']=str(classe['_id'])
+        all_classes.append(classe)
+    return all_classes
+
 # Update
 @directeur_router.put("/update_classes/{classes_id}")
 async def update_classes(classes_id: str, classes: classes):

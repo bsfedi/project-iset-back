@@ -200,18 +200,24 @@ async def upload_file(note,
     return True
 
 
-@demande_router.get("/accept_note/{register_id}")
+@demande_router.get("/accept_note/{register_id}/{status}")
 async def upload_file(
                       register_id,
-
+status
        
                 ):
-
-    db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
-      
-        "status" :  "validated"
-        }})
+    if status == "True" :
+        db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
+        
+            "status" :  "validated"
+            }})
+    else :
+        db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
+        
+            "status" :  "notvalidated"
+            }})
     return True
+
 
 @demande_router.put("/update_status_demande/{demande_id}/{enseignant_id}")
 async def update_status_demande(demande_id, enseignant_id, update_demande: update_demande):
