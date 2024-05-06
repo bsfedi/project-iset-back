@@ -470,7 +470,8 @@ async def get_demandes_fiche():
     demandes = db['enseignant_demande'].find()
     for dem in demandes:
         dem['_id']=str(dem['_id'])
-        if dem["type"]=='FP':
+        dem ['user_id']=  db["users"].find_one({"_id":ObjectId(dem ['user_id'])})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(dem ['user_id'] )})["last_name"]
+        if dem["type"]=='FP' or dem['type'] == 'CONGE':
             fiche_demandes.append(dem)
     return fiche_demandes
 
