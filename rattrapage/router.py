@@ -117,19 +117,20 @@ async def get_demande_attestation(user_id):
         if db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["departement"] == user["departement"]:
             enseignant_name = db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["first_name"] + " " + db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["last_name"]
             
-            for data_item in attes["data"]:
+        for data_item in attes["data"]:
                 # Check if any of the fields are empty
-                if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
-                    new_entry = attes.copy()
-                    new_entry["data"] = [data_item]
-                    new_entry["enseignant_id"] = enseignant_name
-                    list_attes.append(new_entry)
+            if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                new_entry = attes.copy()
+                new_entry["data"] = [data_item]
+                new_entry["enseignant_id"] = enseignant_name
+                list_attes.append(new_entry)
     
     return list_attes
 
 @rattrapge_router.get('/get_historique/{date}/{classe}')
 async def get_historique(date, classe):
-    rattrapge_data = db['rattrapage'].find_one({
+    all_rattrapge_data = []
+    rattrapge_data = db['rattrapage'].find({
         "status":"validated",
         "data": {
             "$elemMatch": {
@@ -138,12 +139,14 @@ async def get_historique(date, classe):
             }
         }
     })
-    
-    if rattrapge_data:
-        rattrapge_data['_id'] = str(rattrapge_data['_id'])
-        return rattrapge_data
-    else:
-        return {}
+    for rattrapge in rattrapge_data:
+        print(rattrapge)
+        rattrapge['_id']=str(rattrapge['_id'])
+        for data in rattrapge["data"]:
+            if data['date'] == date:
+                all_rattrapge_data.append(data)
+    return all_rattrapge_data
+
  
 
 
@@ -227,16 +230,28 @@ async def update_rattrapage(rattrapage_id, status: status):
 
 
 
+
 @rattrapge_router.get("/validated_rattrapage")
 async def get_demande_attestation():
     list_attes = []
+
     response = db["rattrapage"].find({"status": "validated"})
+    
     for attes in response:
-        attes['_id']=str(attes['_id'])
-        list_attes.append(attes)
+        attes['_id'] = str(attes['_id'])
+        
+        
+        enseignant_name = db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["first_name"] + " " + db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["last_name"]
+            
+        for data_item in attes["data"]:
+                # Check if any of the fields are empty
+            if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                new_entry = attes.copy()
+                new_entry["data"] = [data_item]
+                new_entry["enseignant_id"] = enseignant_name
+                list_attes.append(new_entry)
+    
     return list_attes
-
-
 @rattrapge_router.get("/validated_rattrapage/{rattrapage_id}/{status}")
 async def get_demande_attestation(status,rattrapage_id):
     response = db["rattrapage"].update_one(

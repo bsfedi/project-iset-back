@@ -50,7 +50,7 @@ async def get_demande_attestation(user_id):
                 enseignants_names.append("unknow" +" "+ "unknow")
 
         attes['enseignants'] = enseignants_names
-    list_attes.append(attes)
+        list_attes.append(attes)
     return list_attes
 
     
