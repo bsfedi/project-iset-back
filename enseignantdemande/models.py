@@ -8,7 +8,7 @@ from typing import Optional
 class demande(BaseModel):
     user_id : str
     type:str 
-    month : Optional[str] =""
+    month : Optional[list] = []
     status : Optional[str] = "pending"
 
 

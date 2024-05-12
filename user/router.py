@@ -19,7 +19,7 @@ pass_code=  "wiuijqbeodgezebw"
 
 import random
 import string
-subject = f"Invitation to join the platforme"
+subject = f"Compte Enseignant créé sur la plateforme SGI-ISETN"
 def generate_password(length=12):
     # Define the characters to choose from
     characters = string.ascii_letters + string.digits + string.punctuation
@@ -93,7 +93,7 @@ async def sign_up(user: New_user):
         message["Subject"] = subject
 
                             # Attach the additional information and HTML table to the email
-        message.attach(MIMEText(f"<b>  votre {user.code} et le mot de passe est {password} <b> ", "html"))
+        message.attach(MIMEText(f" Bonjour, <br> Un compte de gestion avec le profil “Enseignant” a été créé en votre nom sur la plateforme de gestion intégrée de l’ISET de Nabeul. Pour y accéder, veuillez utiliser les paramètres suivants:  <br>   Nom d’utilisateur : <b> {user.first_name} {user.last_name} </b> <br> <b> Mot de passe:  {password} </b> <br> En cas de difficultés, vous pouvez contacter l’administrateur de la plateforme via mail ou par téléphone.  ", "html"))
 
                             # Create SMTP session for sending the mail
         session = smtplib.SMTP("smtp.gmail.com", 587)  # use gmail with port

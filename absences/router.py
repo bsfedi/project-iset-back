@@ -59,10 +59,10 @@ async def renseigner_absence(absence_id,data:dict):
     })
     return True
     
-@absence_router.get("/get_absences_by_classe/{classe_id}")
-async def  get_absences_by_classe(classe_id):
+@absence_router.get("/get_absences_by_classe/{classe_id}/{module_id}")
+async def  get_absences_by_classe(classe_id,module_id):
     all_absences = []
-    all_students = db['student_absence'].find({'classe_id':classe_id})
+    all_students = db['student_absence'].find({'classe_id':classe_id,"module_id":module_id})
     for student in all_students:
         etudiant = db["preregistres"].find_one({"user_id":ObjectId(student['user_id']) })
         etudiant['user_id'] =str(etudiant['user_id'] )
