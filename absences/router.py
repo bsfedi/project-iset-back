@@ -114,25 +114,22 @@ async def get_students_module(module_id):
     module = db["absences"].find_one({'module': {'$in': [module_id]}})
   
     for classe in module['classe']:
-        print(classe)
         classe_code = db["classes"].find_one({'_id': ObjectId(classe)})['code']
-        print(classe_code)
-        etudiant = db["preregistres"].find_one({"personalInfo.classe": classe_code})
-        
-        etudiant['user_id'] = str(etudiant['user_id'])
-        etudiant['_id'] = str(etudiant['_id'])
-        print(etudiant['user_id'], module_id)
-        absences = db["student_absence"].find_one({"user_id": etudiant['user_id'], "module_id": module_id})
-        print(absences)
-        nb_absence = 0  # Initialize absence counter for the student
-        if absences:  # Check if absences are found
-            for i in range(1, 13):
-                # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
-                if "S" + str(i) in absences and absences["S" + str(i)] == "1":
-                    nb_absence += 1  # Increment absence count if absence recorded for the session
-                print(nb_absence)
-        etudiant['nb_absence'] = nb_absence  # Add absence count to the student object
-        all_students.append(etudiant)      
+        etudiant = db["preregistres"].find({"personalInfo.classe": classe_code})
+        for e in etudiant:
+            e['user_id'] = str(e['user_id'])
+            e['_id'] = str(e['_id'])
+            print("user_id" ,e['user_id'])
+            print("module_id",module_id)
+            absences = db["student_absence"].find_one({"user_id": e['user_id'], "module_id": module_id})
+            nb_absence = 0  # Initialize absence counter for the student
+            if absences:  # Check if absences are found
+                for i in range(1, 13):
+                    # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
+                    if "S" + str(i) in absences and absences["S" + str(i)] == "1":
+                        nb_absence += 1  # Increment absence count if absence recorded for the session
+            e['nb_absence'] = nb_absence  # Add absence count to the student object
+            all_students.append(e)      
     return all_students
 
 @absence_router.get("/get_absences/{student_id}")

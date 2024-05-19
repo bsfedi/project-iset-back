@@ -13,7 +13,7 @@ import os
 from typing import Optional
 from fastapi import UploadFile, File
 import smtplib
-
+from collections import defaultdict
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 gmail_user = "fedislimen98@gmail.com"
@@ -21,6 +21,7 @@ pass_code=  "wiuijqbeodgezebw"
 from user.services import get_user_by_id
 
 preregiter_router = APIRouter(tags=["Register"])
+
 # Mount a directory containing uploaded files to be served statically
 @preregiter_router.put("/personalInfo/{register_id}")
 async def register(register_id,student : student):
@@ -51,6 +52,7 @@ async def register(register_id,student : student):
         },)
     # Here you can process the received pre-registration data
     return {"message": "Pre-registration received successfully"}
+
 
 @preregiter_router.put("/student_family/{register_id}")
 async def register(register_id,student_family : student_family):    
@@ -166,6 +168,7 @@ async def register(register_id,student_family : student_family):
         return False
     # Here you can process the received pre-registration data
     return {"message": "Pre-registration received successfully"}
+
 
 @preregiter_router.post("/docs/{register_id}")
 async def upload_file(register_id, 
@@ -341,7 +344,10 @@ async def validated_register(register_id,validation :validation):
 async def get_register_by_id(register_id):
     preregister = db["preregistres"].find_one({"_id":ObjectId (register_id)})
     preregister["_id"]=str(preregister["_id"])
+    user = db["users"].find_one({"_id":preregister["user_id"]})
+    preregister["personalInfo"]["email"] = user['email']
     preregister["user_id"]=str(preregister["user_id"])
+    
     return {"preregister":preregister}
 
 
@@ -406,6 +412,7 @@ async def update_paiemnt_status(validated:ValidationBody  ,register_id):
             "$set": {"validation.payment": validated.validated}
         })
 
+
 @preregiter_router.put('/update_depot_status/{register_id}')
 async def update_depot_status(validated: ValidationBody , register_id):
 
@@ -413,6 +420,15 @@ async def update_depot_status(validated: ValidationBody , register_id):
             "$set": {"validation.depot": validated.validated ,"status":"VALIDATED"}
         })
     
+
+@preregiter_router.put('/update_classe/{register_id}')
+async def update_depot_status(classe: str , register_id):
+
+    db["preregistres"].update_one({"_id": ObjectId(register_id)}, {
+            "$set": {"personalInfo.classe": classe }
+        })
+    
+
 @preregiter_router.put('/update_paymenttype_status/{register_id}')
 async def update_paymenttype_status(paymenttype: typepayment ,register_id):
 
@@ -420,6 +436,7 @@ async def update_paymenttype_status(paymenttype: typepayment ,register_id):
             "$set": {"validation.paymenttype": paymenttype.type}
         })
     
+
 @preregiter_router.get('/validated_preregister')
 async def get_all_validated_preregister():
     preregistres = []
@@ -454,6 +471,7 @@ async def orientatio(orientation: orientation):
     db['orientation'].insert_one(dict(orientation))
     return True
 
+
 @preregiter_router.get("/orientation/{user_id}")
 async def get_orientationr_by_user_id(user_id):
     orientation = db["orientation"].find_one({"user_id":user_id})
@@ -461,8 +479,6 @@ async def get_orientationr_by_user_id(user_id):
         orientation['_id']=str(orientation['_id'])
     return orientation
 
-
-from collections import defaultdict
 
 @preregiter_router.get('/orientation_by_dep/{departement}')
 async def get_orientation(departement):
@@ -517,8 +533,6 @@ async def get_orientation():
 
     
     return all_orientation
-
-
 
 
 

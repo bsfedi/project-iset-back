@@ -80,9 +80,29 @@ async def get_absence_by_enseignant_id(enseignant_id):
                     "justificatif": ab["justificatif"]
                 })
         else:
+            ab["date"] = ab["date"].strftime("%Y-%m-%d")
             all_demandes.append(ab)
     return all_demandes
 
+
+@rattrapge_router.get("/get_absence_enseignant_id/{enseignant_id}")
+async def get_absence_by_enseignant_id(enseignant_id):
+    all_demandes = []
+    absences = db["absence"].find({"enseignant_id": enseignant_id})
+    for ab in absences:
+        ab['_id'] = str(ab['_id'])
+        if ab["dureé"] == "plusieurs" and ab["date_debut"] and ab["date_fin"]:
+            date_debut = ab["date_debut"]
+            date_fin = ab["date_fin"]
+            dates_between = [date_debut + timedelta(days=x) for x in range((date_fin - date_debut).days + 1)]
+            ab["date_depot"] = ab["date_depot"].strftime("%Y-%m-%d")
+            ab["duree"] = len(dates_between)
+            all_demandes.append(ab)
+        else:
+            ab["date_depot"] = ab["date_depot"].strftime("%Y-%m-%d")
+            ab["date"] = ab["date"].strftime("%Y-%m-%d")
+            all_demandes.append(ab)
+    return all_demandes
     
 
 @rattrapge_router.post("/add_rattrapage/{enseignant_id}")
