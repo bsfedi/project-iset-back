@@ -19,7 +19,10 @@ def signup(user):
     # Insert the new user into the database
     response = db["users"].insert_one(new_user)
     preregister_id = db["preregistres"].insert_one({"user_id":response.inserted_id,"status":"NOTEXIST"})
-
+    db["preregistres"].update_one({"_id":ObjectId(preregister_id.inserted_id)},{
+                "$set": {
+                    "personalInfo":{
+                    "email":new_user["email"] }}})
     if response:
         return {
             "message": "User added successfully !",
