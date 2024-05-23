@@ -147,6 +147,30 @@ async def get_demande_attestation(user_id):
     
     return list_attes
 
+
+@rattrapge_router.get("/rattrapages")
+async def get_demande_attestation():
+    list_attes = []
+
+    response = db["rattrapage"].find()
+    
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        
+        if db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])}):
+            enseignant_name = db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["first_name"] + " " + db["users"].find_one({"_id": ObjectId(attes["enseignant_id"])})["last_name"]
+            
+        for data_item in attes["data"]:
+                # Check if any of the fields are empty
+            if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                new_entry = attes.copy()
+                new_entry["data"] = [data_item]
+                new_entry["enseignant_id"] = enseignant_name
+                list_attes.append(new_entry)
+    
+    return list_attes
+
+
 @rattrapge_router.get('/get_historique/{date}/{classe}')
 async def get_historique(date, classe):
     all_rattrapge_data = []

@@ -133,12 +133,45 @@ async def get_demande_attestation(user_id):
     return list_attes
 
 
+@demande_router.get("/verifications")
+async def get_demande_attestation():
+    list_attes = []
+
+  
+    response = db["demande_verification"].find()
+    for attes in response:
+        attes['_id']=str(attes['_id'])
+        if attes["enseignant"]  :
+            if db["users"].find_one({"_id":ObjectId(attes["enseignant"] )}) :
+                attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["last_name"]
+            else:
+                attes["enseignant"] = "unknow"
+
+        else:
+            pass
+        list_attes.append(attes)
+    return list_attes
+
 @demande_router.get("/presence_by_department/{user_id}")
 async def get_demande_attestation(user_id):
     list_attes = []
     user = db["users"].find_one({"_id":ObjectId(user_id)})
     print(user)
     response = db["demande_presence"].find({"departement":user["departement"]})
+    for attes in response:
+        attes['_id']=str(attes['_id'])
+        # if attes["enseignant"]  :
+        #     attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"]
+        # else:
+        #     pass
+        list_attes.append(attes)
+    return list_attes
+
+@demande_router.get("/presences")
+async def get_demande_attestation():
+    list_attes = []
+
+    response = db["demande_presence"].find()
     for attes in response:
         attes['_id']=str(attes['_id'])
         # if attes["enseignant"]  :

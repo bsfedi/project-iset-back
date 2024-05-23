@@ -600,7 +600,17 @@ async def get_all_enseignants(departement):
         ee['_id']=str(ee['_id'])
         all_enseignants.append(ee)
     return all_enseignants
-    
+
+
+@user_router.get('/enseignants')
+async def get_all_enseignants():
+    all_enseignants = []
+    enseignants =db["users"].find({"role": "enseignant"})
+    for ee in enseignants :
+        
+        ee['_id']=str(ee['_id'])
+        all_enseignants.append(ee)
+    return all_enseignants
     
 @user_router.delete("/user/{user_id}")
 async def delete_user(user_id):
