@@ -28,10 +28,11 @@ async def register(register_id,student : student):
     student.code = student.cin + '-' + student.annee.split('-')[0]
     if student.level == 1 :
         student.baccalaureate = True
-    
+    old_preregister = db["preregistres"].find_one({"_id":ObjectId (register_id)})
     preregistre = db["preregistres"].update_one({"_id":ObjectId(register_id)},{
             "$set": {
                 "personalInfo":{
+                "email":old_preregister["personalInfo"]["email"],
                 "annee":student.annee ,
                 "first_name": student.first_name,
                 "last_name": student.last_name,
@@ -58,6 +59,7 @@ async def register(register_id,student : student):
 async def register(register_id,student_family : student_family):    
     preregistre = db["preregistres"].find_one_and_update({"_id":ObjectId(register_id)},{
             "$set": {
+                "depot":student_family.datedepot,
                 "family_info" :{
                 "father_name": student_family.father_name,
                 "mother_name": student_family.mother_name,
@@ -495,7 +497,7 @@ async def get_orientation(departement):
         preregister = db["preregistres"].find_one({"user_id":ObjectId(orie['user_id']) })
         print(preregister)
         if preregister['personalInfo']['departement'] == departement:
-            orie['student'] = preregister['personalInfo']['first_name'] + ' '+ preregister['personalInfo']['last_name']
+            orie['student'] = preregister['personalInfo']
             all_orientation.append(orie)
             # Counting results
             result = orie.get('resultat', '')

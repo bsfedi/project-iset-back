@@ -28,6 +28,7 @@ class student_family(BaseModel):
     father_phone: Optional[str]
     father_job: Optional[str]
     mother_job :Optional[str]
+    datedepot : Optional[datetime] =datetime.now()
 
 class ValidationBody(BaseModel):
     validated: bool

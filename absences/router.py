@@ -49,6 +49,46 @@ def signup(modules: modules):
             "message": "Demande added successfully!"
         }
     
+
+@absence_router.get('/get_all_modules')
+async def get_classe_by_modules():
+    all_classe = []
+    modules = db["absences"].find()
+    
+    for module in modules:
+        module['_id'] = str(module['_id'])  # Convert the module's ObjectId to string
+        
+        # Fetch class details for each class ID in the module
+        detailed_classes = []
+        for classe_id in module['classe']:
+            classe = db["classes"].find_one({'_id': ObjectId(classe_id)})
+            if classe:
+                classe['_id'] = str(classe['_id'])  # Convert the class's ObjectId to string
+                detailed_classes.append(classe)
+        
+        detailes_module = []
+        for module_id in module['module']:
+            m = db["modules"].find_one({'_id': ObjectId(module_id)})
+            if m:
+                m['_id'] = str(m['_id'])  # Convert the class's ObjectId to string
+                detailes_module.append(m)
+
+        detailes_enseignant = []
+        for enseignant in module['enseignant']:
+            ens = db["users"].find_one({'_id': ObjectId(enseignant)})
+            if ens:
+                ens['_id'] = str(ens['_id'])  # Convert the class's ObjectId to string
+                detailes_enseignant.append(ens)
+        # Replace the class IDs with detailed class info
+
+        
+        module['enseignant'] = detailes_enseignant[0]
+        module['module'] = detailes_module[0]
+        module['classe'] = detailed_classes[0]
+        
+        all_classe.append(module)
+
+    return all_classe
 @absence_router.put("/renseigner_absence/{absence_id}")
 async def renseigner_absence(absence_id,data:dict):
     print(data)
@@ -148,6 +188,10 @@ async def get_absences(student_id):
         ab['nb_absence'] = nb_absence  # Add absence count to the student object
         all_absences.append(ab)  
     return all_absences
+
+
+
+
 
 @absence_router.get('/get_classe_module_by_dep/{departement}')
 async  def  get_classe_module_by_dep(departement):

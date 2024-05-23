@@ -70,6 +70,13 @@ class sanction(BaseModel):
 
 
     
+class updateuser(BaseModel):
+    first_name : Optional[str] =""
+    last_name: Optional[str] =""
+    phone: Optional[str] =""
+    adresse: Optional[str] =""
+
+
 class new_password_user(BaseModel):
     old_password: str
     new_password: str

@@ -233,6 +233,44 @@ async def reset_password(user: User_email):
     except Exception as e :
         return False
     
+@user_router.put("/user/{user_id}")
+async def update_user(user_id,updateuser :updateuser):
+    user = db["users"].find_one(dict(_id=ObjectId(user_id)))
+    if user['role'] == 'student':
+        db["preregistres"].update_one({"user_id":ObjectId(user_id)},{
+                    "$set": {
+                      
+                        
+
+                        "personalInfo.first_name": updateuser.first_name,
+                        "personalInfo.last_name": updateuser.last_name,
+                        "personalInfo.adresse": updateuser.adresse,
+                        "personalInfo.phone": updateuser.phone,
+                     
+
+                        
+
+                    }
+                },)
+
+
+    else:
+        db["users"].update_one({"_id":ObjectId(user_id)},{
+                    "$set": {
+                        
+                        
+
+                        "first_name": updateuser.first_name,
+                        "last_name": updateuser.last_name,
+                        "adresse": updateuser.adresse,
+                        "phone": updateuser.phone,
+                     
+
+                        
+
+                    }
+                },)
+        
 
 
 @user_router.put(
