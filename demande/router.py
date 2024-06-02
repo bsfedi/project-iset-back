@@ -46,6 +46,76 @@ async def upload_file(
         }
         
 
+@demande_router.post("/add_document")
+async def upload_file(
+    uploaded_by : str = Form(...),
+    classe_id: str = Form(...),
+    titre: str = Form(None),
+    document:  Optional[UploadFile] = File(None)
+):
+    if document:
+        with open(os.path.join("uploads", document.filename), "wb") as buffer:
+            buffer.write(await document.read())
+    update_data = {}
+    if document:
+        update_data["note1"] = document.filename
+
+    response = db["documents"].insert_one({"classe_id":classe_id ,"uploaded_by":uploaded_by ,"titre" : titre ,"document": update_data.get("note1"),"added_at":datetime.now()})
+
+    if response:
+        return {
+            "message": "demande added successfully !",
+        }
+        
+
+@demande_router.get("/get_documents/{uploaded_by}",)
+def signup(uploaded_by):
+    all_documents = []
+    # Insert the new user into the database
+    response = db["documents"].find({"uploaded_by":uploaded_by})
+    for e in response:
+        e['_id']=str(e['_id'])
+        all_documents.append(e)
+    return all_documents
+
+@demande_router.get("/get_documents_by_classe/{classe}",)
+def signup(classe):
+    all_documents = []
+    # Insert the new user into the database
+    response = db["documents"].find({"classe_id":classe})
+    for e in response:
+        e['_id']=str(e['_id'])
+        all_documents.append(e)
+    return all_documents
+
+
+
+@demande_router.put("/verification_absence/{item_id}")
+async def editverification_absence(item_id,):
+    response = db["verification_absence"].find({"_id": ObjectId(item_id)})
+
+@demande_router.get("/verification_absence/{item_id}/{status}/{new_absence}")
+async def upload_file(
+                      item_id,
+                      status,
+                      new_absence
+       
+                ):
+    if status == "True" :
+        
+        db["verification_absence"].update_one({"_id": ObjectId(item_id)}, {"$set": {
+                "new_absence":new_absence,
+                "status" :  "validated"
+                }})
+       
+    else :
+        db["verification_absence"].update_one({"_id": ObjectId(item_id)}, {"$set": {
+        
+            "status" :  "notvalidated"
+            }})
+    return True
+
+
 @demande_router.get("/verification_absence/{user_id}")
 async def get_demande_attestation(user_id):
     list_attes = []
