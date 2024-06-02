@@ -57,10 +57,10 @@ async def get_demande_attestation(user_id):
     return list_attes
 
 @demande_router.get("/verification_absences")
-async def get_demande_attestation(user_id):
+async def get_demande_attestation():
     list_attes = []
     
-    response = db["verification_absence"].find({"user_id": user_id})
+    response = db["verification_absence"].find()
     for attes in response:
         attes['_id'] = str(attes['_id'])
         list_attes.append(attes)
