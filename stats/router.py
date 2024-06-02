@@ -3,7 +3,7 @@ import os
 from bson import ObjectId
 from fastapi import APIRouter, File, HTTPException
 from secuirty import *
-
+from stats.models import *
 from database import db
 
 
@@ -13,6 +13,28 @@ stats_router = APIRouter(tags=["stats"])
 
 
 
+
+@stats_router.post('/add_annonce')
+async def add_annonce(annonce:annonce):
+    db['annonce'].insert_one(dict(annonce))
+    return True
+
+
+
+@stats_router.get('/annonces')
+async def add_annonce():
+    all_annonces =[]
+    annonces=db['annonce'].find()
+    for an in annonces:
+        an['_id']=str(an['_id'])
+        all_annonces.append(an)
+    return all_annonces
+
+
+@stats_router.delete('/annonce/{annonce_id}')
+async def delete_annonce(annonce_id):
+    db['annonce'].delete_one({"_id":ObjectId(annonce_id)})
+    return True
 
 
 @stats_router.get('/statistique_student/{module_id}')

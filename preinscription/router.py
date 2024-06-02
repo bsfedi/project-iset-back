@@ -46,7 +46,8 @@ async def register(register_id,student : student):
                 "sexe" : student.sexe,
                 "departement" : student.departement,
                 "classe" : student.classe,
-                "situation": student.situation
+                "situation": student.situation,
+                "status":student.status
                 }
 
             }
@@ -116,7 +117,9 @@ async def register(register_id,student_family : student_family):
         "docs.cinimgValidation": True,
         "docs.cinimgCause": "",
         "docs.transcriptsValidation": True,
-        "docs.transcriptsCause": ""
+        "docs.transcriptsCause": "",
+        "docs.docsuppValidation" : True,
+        "docs.docsuppCause": "",
     }
 })
     print(preregistre)
@@ -176,7 +179,8 @@ async def register(register_id,student_family : student_family):
 async def upload_file(register_id, 
                       baccalaureate: Optional[UploadFile] = File(None), 
                       img_profil : Optional[UploadFile] = File(None),
-                      cin: Optional[UploadFile] = File(None), 
+                      cin: Optional[UploadFile] = File(None),
+                      img_docsupp :  Optional[UploadFile] = File(None),
                       transcripts: Optional[UploadFile] = File(None)):
     if baccalaureate:
         with open(os.path.join("uploads", baccalaureate.filename), "wb") as buffer:
@@ -190,6 +194,9 @@ async def upload_file(register_id,
     if img_profil:
         with open(os.path.join("uploads", img_profil.filename), "wb") as buffer:
             buffer.write(await img_profil.read())
+    if img_docsupp:
+        with open(os.path.join("uploads", img_docsupp.filename), "wb") as buffer:
+            buffer.write(await img_docsupp.read())
     
 
     update_data = {}
@@ -201,6 +208,8 @@ async def upload_file(register_id,
         update_data["transcripts"] = transcripts.filename
     if img_profil:
         update_data["img_profil"] = img_profil.filename
+    if img_docsupp:
+        update_data["img_docsupp"] = img_docsupp.filename
 
     preregistre = db["preregistres"].update_one({"_id": ObjectId(register_id)}, {"$set": {"docs": update_data}})
     return {"filename": transcripts.filename if transcripts else None}
@@ -308,7 +317,6 @@ async def validated_register(register_id,validation :validation):
                 "personalInfo.classeCause": validation.classeCause,
                 "personalInfo.situationValidation": validation.situationValidation,
                 "personalInfo.situationCause": validation.situationCause,
-                
                 "family_info.father_nameValidation": validation.father_nameValidation,
                 "family_info.father_nameCause": validation.father_nameCause,
                 "family_info.mother_nameValidation": validation.mother_nameValidation,
@@ -323,6 +331,8 @@ async def validated_register(register_id,validation :validation):
                 "family_info.mother_jobCause": validation.mother_jobCause,
                 "docs.baccalaureateValidation": validation.baccalaureateValidation,
                 "docs.baccalaureateCause": validation.baccalaureateCause,
+                "docs.docsuppValidation" : validation.docsuppValidation,
+                "docs.docsuppCause": validation.docsuppCause,
                 "docs.cinimgValidation": validation.cinimgValidation,
                 "docs.cinimgCause": validation.cinimgCause,
                 "docs.transcriptsValidation": validation.transcriptsValidation,
@@ -473,6 +483,12 @@ async def orientatio(orientation: orientation):
     db['orientation'].insert_one(dict(orientation))
     return True
 
+@preregiter_router.put("/orientation/{orientation_id}")
+async def orientatio(orientation: orientation,orientation_id):
+    db['orientation'].update_one({"_id":ObjectId(orientation_id)}, {
+            "$set": { "choix1": orientation.choix1,"choix2": orientation.choix2,"choix3": orientation.choix3,
+"choix4": orientation.choix4       }})
+    return True
 
 @preregiter_router.get("/orientation/{user_id}")
 async def get_orientationr_by_user_id(user_id):
@@ -543,6 +559,7 @@ async def get_orientation():
 async def get_orientationr_by_user_id(user_id,parcours):
     orientation = db["orientation"].update_one({"user_id":user_id},
             {"$set": {       
+        "last_update":datetime.now(),        
         "resultat": parcours,
         "status": "validated",
         }})

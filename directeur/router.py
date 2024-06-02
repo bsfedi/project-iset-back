@@ -127,6 +127,15 @@ async def add_modules(modules: modules):
     db['modules'].insert_one(modules.dict())
     return {"message": "modules added successfully!"}
 
+
+@directeur_router.get('/modules_by_niveau/{departement}/{niveau}')
+async def get_modules_by_niveau(niveau,departement):
+    all_modules = []
+    modules = db['modules'].find({"niveau": "L"+ niveau,"departement": departement})
+    for m in modules :
+        m['_id']=str(m['_id'])
+        all_modules.append(m)
+    return all_modules
 # Read
 @directeur_router.get("/get_module/{module_id}")
 async def get_modules(module_id: str):
@@ -226,10 +235,12 @@ async def get_salles(date: str,inputHoraire:str):
                 "inputHoraire": inputHoraire
             }
         }})
+
     salles_to_remove = set()
     for rattrapage in rattrapge_data:
-
-        salles_to_remove.add(rattrapage['salle'])
+        
+        if "salle" in rattrapage:
+            salles_to_remove.add(rattrapage['salle'])
     
     # Iterate through salles and filter out those present in rattrapge for the specified date
     for salle in salles:

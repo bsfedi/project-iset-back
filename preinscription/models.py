@@ -20,6 +20,7 @@ class student(BaseModel):
     departement : Optional[str]
     classe : Optional[str]
     situation : Optional[str]
+    status : Optional[str]
 
 class student_family(BaseModel):
     father_name : Optional[str]
@@ -38,7 +39,8 @@ class typepayment(BaseModel):
 class Files(BaseModel):
     baccalaureate : Optional[UploadFile] 
     cin : Optional[UploadFile] 
-    transcripts : Optional[UploadFile] 
+    transcripts : Optional[UploadFile]
+    img_docsupp : Optional[UploadFile]
 
 
 class PreRegistration(BaseModel):
@@ -92,6 +94,8 @@ class validation(BaseModel):
     note1Cause :Optional[str] = ""
     note2Validation : Optional[bool]  = True
     note2Cause :Optional[str] = ""
+    docsuppValidation  : Optional[bool]
+    docsuppCause :Optional[str] = ""
 
 
 class orientation(BaseModel):

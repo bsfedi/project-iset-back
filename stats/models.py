@@ -17,6 +17,9 @@ class absence(BaseModel):
     module_id :str
     status : str
 
+class annonce(BaseModel):
+    titre : str
+    contenu :str
 
 
 

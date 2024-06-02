@@ -140,6 +140,9 @@ async def get_demande_attestation(user_id):
         for data_item in attes["data"]:
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
+                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
                 new_entry["enseignant_id"] = enseignant_name
@@ -163,6 +166,8 @@ async def get_demande_attestation():
         for data_item in attes["data"]:
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
+                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
                 new_entry["enseignant_id"] = enseignant_name
@@ -207,6 +212,10 @@ async def get_demande_attestation(enseignant_id):
         for data_item in attes["data"]:
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
+                print(data_item)
+                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
+                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                print(data_item['inputModule'])
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
                
@@ -279,7 +288,7 @@ async def update_rattrapage(rattrapage_id, status: status):
 async def get_demande_attestation():
     list_attes = []
 
-    response = db["rattrapage"].find({"status": "validated"})
+    response = db["rattrapage"].find()
     
     for attes in response:
         attes['_id'] = str(attes['_id'])
@@ -293,7 +302,10 @@ async def get_demande_attestation():
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
                 new_entry["enseignant_id"] = enseignant_name
-                list_attes.append(new_entry)
+                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
+                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                if data_item['status'] ==  "validated":
+                    list_attes.append(new_entry)
     
     return list_attes
 @rattrapge_router.get("/validated_rattrapage/{rattrapage_id}/{status}")

@@ -1,7 +1,7 @@
 
 import os
 from bson import ObjectId
-from fastapi import APIRouter, File, HTTPException
+from fastapi import APIRouter, File, Form, HTTPException
 from secuirty import *
 from demande.models import *
 
@@ -23,6 +23,49 @@ def signup(demande :demande_presence ):
         }
 
 
+@demande_router.post("/verification_absence/{user_id}")
+async def upload_file(
+    user_id,
+    matiere: str = Form(...),
+    nb_absence: str = Form(None),
+    commentaire: str = Form(None),
+    justificatif:  Optional[UploadFile] = File(None)
+):
+    if justificatif:
+        with open(os.path.join("uploads", justificatif.filename), "wb") as buffer:
+            buffer.write(await justificatif.read())
+    update_data = {}
+    if justificatif:
+        update_data["note1"] = justificatif.filename
+
+    response = db["verification_absence"].insert_one({"user_id":user_id , "matiere" : matiere , "nb_absence":nb_absence,"status":"pending" ,"commentaire": commentaire,"justificatif": update_data.get("note1")})
+
+    if response:
+        return {
+            "message": "demande added successfully !",
+        }
+        
+
+@demande_router.get("/verification_absence/{user_id}")
+async def get_demande_attestation(user_id):
+    list_attes = []
+    
+    response = db["verification_absence"].find({"user_id": user_id})
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        list_attes.append(attes)
+    return list_attes
+
+@demande_router.get("/verification_absences")
+async def get_demande_attestation(user_id):
+    list_attes = []
+    
+    response = db["verification_absence"].find({"user_id": user_id})
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        list_attes.append(attes)
+    return list_attes
+
 @demande_router.post("/verification",)
 def signup(demande :demande_verification ):
     # Insert the new user into the database
@@ -40,8 +83,9 @@ async def get_demande_attestation(user_id):
     response = db["demande_presence"].find({"user_id": user_id})
     for attes in response:
         attes['_id'] = str(attes['_id'])
+        
         enseignants_names = []
-        for i in attes['enseignants'] :
+        for i in attes['enseignants']:
             ens = db["users"].find_one({"_id":ObjectId (i['_id'])})
             if ens :
                 enseignants_names.append(ens["first_name"] +" "+ ens["last_name"])
@@ -233,17 +277,24 @@ async def upload_file(note,
     return True
 
 
-@demande_router.get("/accept_note/{register_id}/{status}")
-async def upload_file(
+@demande_router.get("/accept_note/{role}/{register_id}/{status}")
+async def upload_file(role,
                       register_id,
 status
        
                 ):
     if status == "True" :
-        db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
-        
-            "status" :  "validated"
-            }})
+        if role == "directeuretudes":
+            db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
+            
+                "status" :  "validated"
+                }})
+        else:
+            db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
+            
+                "status" :  "validated_by_departement"
+                }})
+
     else :
         db["demande_verification"].update_one({"_id": ObjectId(register_id)}, {"$set": {
         
