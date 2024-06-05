@@ -398,6 +398,7 @@ async def edit_preregister(register_id,PreRegistration :PreRegistration):
                 "code": PreRegistration.personalInfo.code,
                 "adresse": PreRegistration.personalInfo.adresse,
                 "phone": PreRegistration.personalInfo.phone,
+                "status" :  PreRegistration.personalInfo.status,
                 "brith_date": PreRegistration.personalInfo.brith_date,
                 "sexe" : PreRegistration.personalInfo.sexe,
                 "departement" : PreRegistration.personalInfo.departement,

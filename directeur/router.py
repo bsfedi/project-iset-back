@@ -41,6 +41,17 @@ async def get_parcours():
         all_parcours.append(parcour)
     return all_parcours
     
+
+# Read
+@directeur_router.get("/get_parcours/{departement}")
+async def get_parcours(departement):
+    all_parcours =[]
+    parcours = db['parcours'].find({"departement":departement})
+    for parcour in parcours:
+        parcour['_id']=str(parcour['_id'])
+        all_parcours.append(parcour)
+    return all_parcours
+
 # Update
 @directeur_router.put("/update_parcours/{parcours_id}")
 async def update_parcours(parcours_id: str, parcours: parcours):

@@ -140,8 +140,8 @@ async def get_demande_attestation(user_id):
         for data_item in attes["data"]:
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
-                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
-                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                data_item['inputClass'] = {"code":db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code'] ,"inputClass": data_item['inputClass'] } 
+                data_item['inputModule'] = {"code":  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code'] ,"inputModule": data_item['inputModule'] } 
                 
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
@@ -166,8 +166,8 @@ async def get_demande_attestation():
         for data_item in attes["data"]:
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
-                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
-                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                data_item['inputClass'] = {"code":db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code'] ,"inputClass": data_item['inputClass'] } 
+                data_item['inputModule'] = {"code":  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code'] ,"inputModule": data_item['inputModule'] } 
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
                 new_entry["enseignant_id"] = enseignant_name
@@ -213,8 +213,8 @@ async def get_demande_attestation(enseignant_id):
                 # Check if any of the fields are empty
             if all(data_item[field] for field in ["date", "inputClass", "inputModule", "inputHoraire"]):
                 print(data_item)
-                data_item['inputClass'] =  db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code']
-                data_item['inputModule'] =  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code']
+                data_item['inputClass'] = {"code":db["classes"].find_one({"_id": ObjectId (data_item['inputClass'])})['code'] ,"inputClass": data_item['inputClass'] } 
+                data_item['inputModule'] = {"code":  db["modules"].find_one({"_id": ObjectId (data_item['inputModule'])})['code'] ,"inputModule": data_item['inputModule'] } 
                 print(data_item['inputModule'])
                 new_entry = attes.copy()
                 new_entry["data"] = [data_item]
@@ -258,7 +258,7 @@ async def update_rattrapage(rattrapage_id, status: status):
                     }
                 }
             })
-        print(ee)
+    
         response = db["rattrapage"].update_one(
             {
                 "_id": ObjectId(rattrapage_id),

@@ -21,10 +21,10 @@ async def add_annonce(annonce:annonce):
 
 
 
-@stats_router.get('/annonces')
-async def add_annonce():
+@stats_router.get('/annonces/{departement}')
+async def add_annonce(departement):
     all_annonces =[]
-    annonces=db['annonce'].find()
+    annonces=db['annonce'].find({"departement":departement})
     for an in annonces:
         an['_id']=str(an['_id'])
         all_annonces.append(an)

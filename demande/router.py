@@ -66,6 +66,12 @@ async def upload_file(
         return {
             "message": "demande added successfully !",
         }
+    
+
+
+@demande_router.delete("/delete_document/{document_id}")
+async def delete_documen(document_id):
+    db['documents'].delete_one({"_id":ObjectId(document_id)})
         
 
 @demande_router.get("/get_documents/{uploaded_by}",)

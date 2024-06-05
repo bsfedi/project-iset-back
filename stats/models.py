@@ -18,6 +18,7 @@ class absence(BaseModel):
     status : str
 
 class annonce(BaseModel):
+    departement :str
     titre : str
     contenu :str
 

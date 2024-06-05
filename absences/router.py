@@ -17,31 +17,32 @@ def signup(modules: modules):
 
     # Inserting the data into the database
     response = db["absences"].insert_one(dict(modules))
-    for module in modules.module:
+    
             
-        for classe in modules.classe:
-            classe_code = db["classes"].find_one({'_id': ObjectId(classe)})['code']
-            etudiant = db["preregistres"].find_one({"personalInfo.classe": classe_code})
-            if etudiant :
-                db['student_absence'].insert_one({
-                    "user_id":str(etudiant['user_id']),
-                    "module_id": module,
-                    "classe_id": classe,
-                    "S1": "",
-                    "S2": "",
-                    "S3": "",
-                    "S4": "",
-                    "S5": "",
-                    "S6": "",
-                    "S7": "",
-                    "S8": "",
-                    "S9": "",
-                    "S10": "",
-                    "S11": "",
-                    "S12": "",
-                    "reclamation" : []
+        
+    classe_code = db["classes"].find_one({'_id': ObjectId(modules.classe)})['code']
+    etudiant = db["preregistres"].find({"personalInfo.classe": classe_code})
+    for e in etudiant:
+        if e :
+            db['student_absence'].insert_one({
+                        "user_id":str(e['user_id']),
+                        "module_id": modules.module,
+                        "classe_id": modules.classe,
+                        "S1": "",
+                        "S2": "",
+                        "S3": "",
+                        "S4": "",
+                        "S5": "",
+                        "S6": "",
+                        "S7": "",
+                        "S8": "",
+                        "S9": "",
+                        "S10": "",
+                        "S11": "",
+                        "S12": "",
+                        "reclamation" : []
 
-                })
+                    })
 
 
     if response:
@@ -60,25 +61,25 @@ async def get_classe_by_modules():
         
         # Fetch class details for each class ID in the module
         detailed_classes = []
-        for classe_id in module['classe']:
-            classe = db["classes"].find_one({'_id': ObjectId(classe_id)})
-            if classe:
-                classe['_id'] = str(classe['_id'])  # Convert the class's ObjectId to string
-                detailed_classes.append(classe)
+       
+        classe = db["classes"].find_one({'_id': ObjectId(module['classe'] )})
+        if classe:
+            classe['_id'] = str(classe['_id'])  # Convert the class's ObjectId to string
+            detailed_classes.append(classe)
         
         detailes_module = []
-        for module_id in module['module']:
-            m = db["modules"].find_one({'_id': ObjectId(module_id)})
-            if m:
-                m['_id'] = str(m['_id'])  # Convert the class's ObjectId to string
-                detailes_module.append(m)
+
+        m = db["modules"].find_one({'_id': ObjectId(module['module'])})
+        if m:
+            m['_id'] = str(m['_id'])  # Convert the class's ObjectId to string
+            detailes_module.append(m)
 
         detailes_enseignant = []
-        for enseignant in module['enseignant']:
-            ens = db["users"].find_one({'_id': ObjectId(enseignant)})
-            if ens:
-                ens['_id'] = str(ens['_id'])  # Convert the class's ObjectId to string
-                detailes_enseignant.append(ens)
+
+        ens = db["users"].find_one({'_id': ObjectId(module['enseignant'])})
+        if ens:
+            ens['_id'] = str(ens['_id'])  # Convert the class's ObjectId to string
+            detailes_enseignant.append(ens)
         # Replace the class IDs with detailed class info
 
         
@@ -116,16 +117,16 @@ async def  get_absences_by_classe(classe_id,module_id):
 async def get_classe_by_module(module_id: str):
     unique_classes = set()  # Initialize an empty set to store unique class IDs
     all_classe = []
-    modules = db["absences"].find({'module': {'$in': [module_id]}})
+    modules = db["absences"].find({'module': module_id})
     for module in modules:
         module['_id'] = str(module['_id'])
-        for classe_id in module['classe']:
-            if classe_id not in unique_classes:  # Check if class ID is already in the set
-                unique_classes.add(classe_id)  # If not, add it to the set
-                classe = db["classes"].find_one({'_id': ObjectId(classe_id)})
-                if classe:
-                    classe['_id'] = str(classe['_id'])
-                    all_classe.append(classe)
+
+
+
+        classe = db["classes"].find_one({'_id': ObjectId(module['classe'])})
+        if classe:
+                classe['_id'] = str(classe['_id'])
+                all_classe.append(classe)
     return all_classe
 
 
@@ -136,15 +137,14 @@ async def get_classe_by_module(module_id: str):
 async def get_modules_by_enseignant(enseignant_id: str):
     unique_modules = set()  # Initialize an empty set to store unique module IDs
     all_classe = []
-    modules = db["absences"].find({'enseignant': {'$in': [enseignant_id]}})
+    modules = db["absences"].find({'enseignant':enseignant_id})
     for module in modules:
-        for m in module['module']:
-            m_id = str(m)
-            if m_id not in unique_modules:  # Check if module ID is already in the set
-                unique_modules.add(m_id)  # If not, add it to the set
-                m_doc = db["modules"].find_one({'_id': ObjectId(m_id)})
-                m_doc['_id'] = str(m_doc['_id'])
-                all_classe.append(m_doc)
+        
+  
+
+        m_doc = db["modules"].find_one({'_id': ObjectId(module['module'])})
+        m_doc['_id'] = str(m_doc['_id'])
+        all_classe.append(m_doc)
     return all_classe
 
 
@@ -153,23 +153,23 @@ async def get_students_module(module_id):
     all_students = []
     module = db["absences"].find_one({'module': {'$in': [module_id]}})
   
-    for classe in module['classe']:
-        classe_code = db["classes"].find_one({'_id': ObjectId(classe)})['code']
-        etudiant = db["preregistres"].find({"personalInfo.classe": classe_code})
-        for e in etudiant:
-            e['user_id'] = str(e['user_id'])
-            e['_id'] = str(e['_id'])
-            print("user_id" ,e['user_id'])
-            print("module_id",module_id)
-            absences = db["student_absence"].find_one({"user_id": e['user_id'], "module_id": module_id})
-            nb_absence = 0  # Initialize absence counter for the student
-            if absences:  # Check if absences are found
-                for i in range(1, 13):
-                    # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
-                    if "S" + str(i) in absences and absences["S" + str(i)] == "1":
-                        nb_absence += 1  # Increment absence count if absence recorded for the session
-            e['nb_absence'] = nb_absence  # Add absence count to the student object
-            all_students.append(e)      
+    
+    classe_code = db["classes"].find_one({'_id': ObjectId(module['classe'])})['code']
+    etudiant = db["preregistres"].find({"personalInfo.classe": classe_code})
+    for e in etudiant:
+        e['user_id'] = str(e['user_id'])
+        e['_id'] = str(e['_id'])
+        print("user_id" ,e['user_id'])
+        print("module_id",module_id)
+        absences = db["student_absence"].find_one({"user_id": e['user_id'], "module_id": module_id})
+        nb_absence = 0  # Initialize absence counter for the student
+        if absences:  # Check if absences are found
+            for i in range(1, 13):
+                # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
+                if "S" + str(i) in absences and absences["S" + str(i)] == "1":
+                    nb_absence += 1  # Increment absence count if absence recorded for the session
+        e['nb_absence'] = nb_absence  # Add absence count to the student object
+        all_students.append(e)      
     return all_students
 
 @absence_router.get("/get_absences/{student_id}")

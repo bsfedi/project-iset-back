@@ -6,9 +6,9 @@ from typing import Optional
 
 
 class modules(BaseModel):
-    classe : list
-    module : list
-    enseignant : list
+    classe : str
+    module : str
+    enseignant : str
     
 
 
