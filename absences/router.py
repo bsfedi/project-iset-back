@@ -28,19 +28,7 @@ def signup(modules: modules):
                         "user_id":str(e['user_id']),
                         "module_id": modules.module,
                         "classe_id": modules.classe,
-                        "S1": "",
-                        "S2": "",
-                        "S3": "",
-                        "S4": "",
-                        "S5": "",
-                        "S6": "",
-                        "S7": "",
-                        "S8": "",
-                        "S9": "",
-                        "S10": "",
-                        "S11": "",
-                        "S12": "",
-                        "reclamation" : []
+                        "data" : {}
 
                     })
 
@@ -90,28 +78,39 @@ async def get_classe_by_modules():
         all_classe.append(module)
 
     return all_classe
-@absence_router.put("/renseigner_absence/{absence_id}")
-async def renseigner_absence(absence_id,data:dict):
-    print(data)
-    db['student_absence'].update_one({'_id':ObjectId(absence_id)},{
+@absence_router.put("/renseigner_absence/{user_id}/{module_id}/{classe_id}")
+async def renseigner_absence(user_id,module_id,classe_id,data:dict):
+    absence = db["student_absence"].find_one({'user_id':user_id,'module_id':module_id,'classe_id':classe_id})['data']
+    absence.append(data)
+    db['student_absence'].update_one({'user_id':user_id,'module_id':module_id,'classe_id':classe_id},{
         "$set" :
-            data
+            {"data":absence}
         
     })
     return True
     
 @absence_router.get("/get_absences_by_classe/{classe_id}/{module_id}")
-async def  get_absences_by_classe(classe_id,module_id):
+async def get_absences_by_classe(classe_id, module_id):
     all_absences = []
-    all_students = db['student_absence'].find({'classe_id':classe_id,"module_id":module_id})
+    all_students = db['student_absence'].find({'classe_id': classe_id, "module_id": module_id})
+    
     for student in all_students:
-        etudiant = db["preregistres"].find_one({"user_id":ObjectId(student['user_id']) })
-        etudiant['user_id'] =str(etudiant['user_id'] )
-        etudiant['_id'] =str(etudiant['_id'] )
-        student['etudiant']=etudiant
-        student['_id']=str(student['_id'])
+        total = 0
+        etudiant = db["preregistres"].find_one({"user_id": ObjectId(student['user_id'])})
+        etudiant['user_id'] = str(etudiant['user_id'])
+        etudiant['_id'] = str(etudiant['_id'])
+        student['etudiant'] = etudiant
+        student['_id'] = str(student['_id'])
+        
+        for d in student['data']:
+            if isinstance(d['nb_absence'], str):  # Convert string to integer if necessary
+                d['nb_absence'] = int(d['nb_absence'])
+            total += d['nb_absence']
+        
+        student['total_absences'] = total  # Add total absences to the student record
         all_absences.append(student)
-    return(all_absences)
+    
+    return all_absences
 
 @absence_router.get('/get_classe_by_module/{module_id}')
 async def get_classe_by_module(module_id: str):
@@ -163,12 +162,14 @@ async def get_students_module(module_id):
         print("module_id",module_id)
         absences = db["student_absence"].find_one({"user_id": e['user_id'], "module_id": module_id})
         nb_absence = 0  # Initialize absence counter for the student
-        if absences:  # Check if absences are found
-            for i in range(1, 13):
-                # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
-                if "S" + str(i) in absences and absences["S" + str(i)] == "1":
-                    nb_absence += 1  # Increment absence count if absence recorded for the session
-        e['nb_absence'] = nb_absence  # Add absence count to the student object
+        total = 0  # Initialize absence counter for the student
+        if absences:
+            for d in absences['data']:
+                if isinstance(d['nb_absence'], str):  # Convert string to integer if necessary
+                    d['nb_absence'] = int(d['nb_absence'])
+                total += d['nb_absence']
+            
+            e['nb_absence'] = total  # Add absence count to the student object
         all_students.append(e)      
     return all_students
 
@@ -179,15 +180,18 @@ async def get_absences(student_id):
     for ab in absences :
         ab['_id']=str(ab['_id'])
         ab["module_id"] =  db['modules'].find_one({"_id":ObjectId(ab["module_id"])})['code']
-        nb_absence = 0  # Initialize absence counter for the student
+        total = 0  # Initialize absence counter for the student
 
-        for i in range(1, 13):
-                    # Assuming 'S1', 'S2', ..., 'S12' are keys in absences dictionary
-            if "S" + str(i) in ab and ab["S" + str(i)] == "1":
-                nb_absence += 1  # Increment absence count if absence recorded for the session
-        ab['nb_absence'] = nb_absence  # Add absence count to the student object
+        for d in ab['data']:
+            if isinstance(d['nb_absence'], str):  # Convert string to integer if necessary
+                d['nb_absence'] = int(d['nb_absence'])
+            total += d['nb_absence']
+        
+        ab['total_absences'] = total  # Add total absences to the student record
         all_absences.append(ab)  
     return all_absences
+
+
 
 
 

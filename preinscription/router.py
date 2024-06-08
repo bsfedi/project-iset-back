@@ -442,6 +442,17 @@ async def update_depot_status(classe: str , register_id):
         })
     
 
+@preregiter_router.get('/get_students_by_classe/{classe}')
+async def update_depot_status(classe: str ):
+    students = []
+    all_students=db["preregistres"].find({"personalInfo.classe": classe})
+    for student in all_students:
+        print(student)
+        student['_id']=str(student['_id'])
+        student['user_id']=str(student['user_id'])
+        students.append(student)
+    return students
+
 @preregiter_router.put('/update_paymenttype_status/{register_id}')
 async def update_paymenttype_status(paymenttype: typepayment ,register_id):
 
