@@ -45,7 +45,7 @@ def get_all_users():
 
         
         # Iterate over users that match the query 
-        for user in db["users"].find({"role": {"$nin": ["student", "tuitionofficer","ADMIN"]}}):
+        for user in db["users"].find({"role": {"$nin": ["student","ADMIN"]}}):
             # Convert ObjectId to string
             user["_id"] = str(user["_id"]) 
             # Convert the bytes to a base64-encoded string using base64.b64encode
