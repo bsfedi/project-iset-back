@@ -98,7 +98,7 @@ async def get_stages(user_id):
 @stage_router.get('/get_stages_by_departement/{user_id}')
 async def get_stages(user_id):
     all_stages =[]
- 
+    user = db['users'].find_one({"user_id":ObjectId(user_id)})['departement']
     stages = db['stage'].find()
     print(stages)
     for stage in stages:
