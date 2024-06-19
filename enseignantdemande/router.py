@@ -1,4 +1,5 @@
 import os
+from typing import List
 from bson import ObjectId
 from fastapi import APIRouter, File, HTTPException
 from secuirty import *
@@ -32,6 +33,57 @@ def signup(conge :conge ):
         return {
             "message": "demande added successfully !",
         }
+
+class ScheduleItem(BaseModel):
+    day: str
+    sessions: List[bool]
+
+class Module(BaseModel):
+    Classe: str
+    ChargeTP: float
+    ChargeCI: float
+    module: str
+
+class WishForm(BaseModel):
+    nom: str
+    prenom: str
+    user_id :str
+    status : str = "pending"
+    grade: str
+    modules: List[Module]
+    data: List[ScheduleItem]
+
+@enseignantdemande_router.post("/fiche_de_voeux")
+def submit_wish_form(wish_form: WishForm):
+    # Insert the new form into the database
+    response = db["fiche_de_voeux"].insert_one(wish_form.dict())
+    if response:
+        return {"message": "fiche_de_voeux added successfully!"}
+    else:
+        return {"message": "Error adding fiche_de_voeux"}
+    
+
+
+@enseignantdemande_router.get("/fiche_de_voeux/{user_id}")
+def submit_wish_form(user_id):
+    # Insert the new form into the database
+    response = db["fiche_de_voeux"].find_one({"user_id":user_id})
+    response['_id']=str(response['_id'])
+
+    return response
+
+
+@enseignantdemande_router.get("/fiche_de_voeux")
+def submit_wish_form():
+    # Insert the new form into the database
+    all_fiches = []
+    response = db["fiche_de_voeux"].find()
+    for res in response:
+        res['_id']=str(res['_id'])
+        all_fiches.append(res)
+    return all_fiches
+
+
 
 @enseignantdemande_router.get("/enseignant_demande")
 async def get_demande_attestation():

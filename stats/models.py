@@ -21,6 +21,7 @@ class annonce(BaseModel):
     departement :str
     titre : str
     contenu :str
+    ens : Optional [str] = False
 
 
 

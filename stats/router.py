@@ -21,15 +21,27 @@ async def add_annonce(annonce:annonce):
 
 
 
+
+
+
 @stats_router.get('/annonces/{departement}')
 async def add_annonce(departement):
     all_annonces =[]
-    annonces=db['annonce'].find({"departement":departement})
+    annonces=db['annonce'].find({"departement":departement,"ens": {"$in": ["false", "all"]}})
     for an in annonces:
         an['_id']=str(an['_id'])
         all_annonces.append(an)
     return all_annonces
 
+
+@stats_router.get('/annonces_ens/{departement}')
+async def add_annonce(departement):
+    all_annonces =[]
+    annonces=db['annonce'].find({"departement":departement,"ens": {"$in": ["true", "all"]}})
+    for an in annonces:
+        an['_id']=str(an['_id'])
+        all_annonces.append(an)
+    return all_annonces
 
 @stats_router.delete('/annonce/{annonce_id}')
 async def delete_annonce(annonce_id):

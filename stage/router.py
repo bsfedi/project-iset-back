@@ -95,12 +95,11 @@ async def get_stages(user_id):
     return all_stages
 
 
-@stage_router.get('/get_stages_by_departement/{user_id}')
-async def get_stages(user_id):
+@stage_router.get('/get_stages_by_departement/{departement}')
+async def get_stages(departement):
     all_stages =[]
-    user = db['users'].find_one({"user_id":ObjectId(user_id)})['departement']
-    stages = db['stage'].find()
-    print(stages)
+    stages = db['stage'].find({"departement":departement,"type" : "stage PFE"})
+    
     for stage in stages:
         stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']
         # stage['user_id']=
@@ -108,4 +107,51 @@ async def get_stages(user_id):
         stage['_id']=str(stage['_id'])
         all_stages.append(stage)
     return all_stages
+
+
+@stage_router.get('/get_stages_by_departement')
+async def get_stages():
+    all_stages =[]
+    stages = db['stage'].find({"type":"stage PFE"})
+    
+    for stage in stages:
+        stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']
+        # stage['user_id']=
+
+        stage['_id']=str(stage['_id'])
+        all_stages.append(stage)
+    return all_stages
+
+
+
+@stage_router.get('/get_stages_by_departement_inperf/{departement}')
+async def get_stages(departement):
+    all_stages =[]
+    stages = db['stage'].find({"type": {"$ne": "stage PFE"}})
+    
+    for stage in stages:
+        stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']
+        # stage['user_id']=
+
+        stage['_id']=str(stage['_id'])
+        all_stages.append(stage)
+    return all_stages
+
+
+@stage_router.get('/get_stages_by_departement_inperf')
+async def get_stages():
+    all_stages =[]
+    stages = db['stage'].find({"type": {"$ne": "stage PFE"}})
+    
+    for stage in stages:
+        stage['user_id'] =db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['first_name'] + " "+db['preregistres'].find_one({"user_id":ObjectId(stage['user_id'])})['personalInfo']['last_name']
+        # stage['user_id']=
+
+        stage['_id']=str(stage['_id'])
+        all_stages.append(stage)
+    return all_stages
+
+
+
+
 

@@ -187,6 +187,20 @@ async def get_modules():
         all_modules.append(module)
     return all_modules
 
+
+@directeur_router.get("/get_modules/{departement}")
+async def get_modules(departement):
+    all_modules =[]
+    modules = db['modules'].find({"departement":departement})
+    for module in modules:
+        if db['parcours'].find_one({"_id": ObjectId(module['parcours'])}):
+            module['parcours'] =  db['parcours'].find_one({"_id": ObjectId(module['parcours'])})["libelle"] 
+        else:
+            module['parcour'] = "" 
+        module['_id']=str(module['_id'])
+        all_modules.append(module)
+    return all_modules
+
     
 # Update
 @directeur_router.put("/update_modules/{modules_id}")

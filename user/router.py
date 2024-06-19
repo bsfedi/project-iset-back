@@ -172,7 +172,7 @@ async def set_password(user_password: User_password, user_id):
 
 
 
-EMAIL_URL = "http://localhost:4200/"
+EMAIL_URL = "https://front-project-iset-4q2w.vercel.app/"
 @user_router.post(
     "/auth/forgot-password",
 )
@@ -194,10 +194,17 @@ async def reset_password(user: User_email):
     user = get_user_by_email(user.email)
     if not user:
         raise HTTPException(status_code=404, detail="user does not exist!")
+    if user['role'] != "student":
+        receiver = user["email"]
+        first_name = user["first_name"]
+        id_user = str(user["_id"])
+    else:
+        user1 = db["preregistres"].find_one(dict(user_id=ObjectId(str(user["_id"]))))
+        receiver = user1['personalInfo']['email']
+        first_name = user1['personalInfo']['first_name']
+        id_user = str(user["_id"])
 
-    receiver = user["email"]
-    first_name = user["first_name"]
-    id_user = str(user["_id"])
+    
     # Send password reset email
     subject = "Password reset request"
     first_name=first_name[0].upper()  + first_name[1:]

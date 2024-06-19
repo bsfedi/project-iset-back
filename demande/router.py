@@ -28,6 +28,7 @@ async def upload_file(
     user_id,
     matiere: str = Form(...),
     nb_absence: str = Form(None),
+    departement : str =Form(None),
     commentaire: str = Form(None),
     justificatif:  Optional[UploadFile] = File(None)
 ):
@@ -38,7 +39,7 @@ async def upload_file(
     if justificatif:
         update_data["note1"] = justificatif.filename
 
-    response = db["verification_absence"].insert_one({"user_id":user_id , "matiere" : matiere , "nb_absence":nb_absence,"status":"pending" ,"commentaire": commentaire,"justificatif": update_data.get("note1")})
+    response = db["verification_absence"].insert_one({"user_id":user_id , "matiere" : matiere , "departement":departement, "nb_absence":nb_absence,"status":"pending" ,"commentaire": commentaire,"justificatif": update_data.get("note1")})
 
     if response:
         return {
@@ -141,6 +142,18 @@ async def get_demande_attestation():
         attes['_id'] = str(attes['_id'])
         list_attes.append(attes)
     return list_attes
+
+
+@demande_router.get("/verification_absences/{departement}")
+async def get_demande_attestation(departement):
+    list_attes = []
+    
+    response = db["verification_absence"].find({"departement":departement})
+    for attes in response:
+        attes['_id'] = str(attes['_id'])
+        list_attes.append(attes)
+    return list_attes
+
 
 @demande_router.post("/verification",)
 def signup(demande :demande_verification ):
@@ -259,6 +272,27 @@ async def get_demande_attestation():
 
   
     response = db["demande_verification"].find()
+    for attes in response:
+        attes['_id']=str(attes['_id'])
+        if attes["enseignant"]  :
+            if db["users"].find_one({"_id":ObjectId(attes["enseignant"] )}) :
+                attes["enseignant"]  = db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(attes["enseignant"] )})["last_name"]
+            else:
+                attes["enseignant"] = "unknow"
+
+        else:
+            pass
+        list_attes.append(attes)
+    return list_attes
+
+
+
+@demande_router.get("/all_verifications")
+async def get_demande_attestation():
+    list_attes = []
+
+  
+    response = db["demande_verification"].find({"status":"validated"})
     for attes in response:
         attes['_id']=str(attes['_id'])
         if attes["enseignant"]  :
@@ -633,6 +667,21 @@ async def get_demandes_fiche():
         dem ['user_id']=  db["users"].find_one({"_id":ObjectId(dem ['user_id'])})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(dem ['user_id'] )})["last_name"]
         if dem["type"]=='FP' or dem['type'] == 'CONGE':
             fiche_demandes.append(dem)
+    return fiche_demandes
+
+
+
+@demande_router.get('/all_conge')
+async def get_demandes_fiche():
+
+    fiche_demandes = []
+        # count_conge = db['absence'].count_documents({})
+    demandes = db['enseignant_demande'].find({"type":"CONGE"})
+    for dem in demandes:
+        dem['_id']=str(dem['_id'])
+        dem ['user_id']=  db["users"].find_one({"_id":ObjectId(dem ['user_id'])})["first_name"] + ' '+db["users"].find_one({"_id":ObjectId(dem ['user_id'] )})["last_name"]
+        
+        fiche_demandes.append(dem)
     return fiche_demandes
 
 @demande_router.get('/update_status_fiche/{ficher_id}')
