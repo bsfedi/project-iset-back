@@ -34,6 +34,8 @@ def signup(conge :conge ):
             "message": "demande added successfully !",
         }
 
+
+
 class ScheduleItem(BaseModel):
     day: str
     sessions: List[bool]
@@ -47,6 +49,7 @@ class Module(BaseModel):
 class WishForm(BaseModel):
     nom: str
     prenom: str
+    added_at : Optional[datetime] = datetime.now()
     user_id :str
     status : str = "pending"
     grade: str
@@ -55,6 +58,7 @@ class WishForm(BaseModel):
 
 @enseignantdemande_router.post("/fiche_de_voeux")
 def submit_wish_form(wish_form: WishForm):
+    wish_form.added_at = datetime.now()
     # Insert the new form into the database
     response = db["fiche_de_voeux"].insert_one(wish_form.dict())
     if response:
@@ -67,8 +71,24 @@ def submit_wish_form(wish_form: WishForm):
 @enseignantdemande_router.get("/fiche_de_voeux/{user_id}")
 def submit_wish_form(user_id):
     # Insert the new form into the database
-    response = db["fiche_de_voeux"].find_one({"user_id":user_id})
+    all_fiche_de_voeux =[]
+    response = db["fiche_de_voeux"].find({"user_id":user_id})
+    for res in response:
+        res['_id']=str(res['_id'])
+        all_fiche_de_voeux.append(res)
+
+    return all_fiche_de_voeux
+
+
+
+@enseignantdemande_router.get("/fiche_de_voeux_by_id/{voeux_id}")
+def submit_wish_form(voeux_id):
+    # Insert the new form into the database
+   
+    response = db["fiche_de_voeux"].find_one({"_id":ObjectId(voeux_id)})
+    print(response)
     response['_id']=str(response['_id'])
+
 
     return response
 
@@ -82,6 +102,9 @@ def submit_wish_form():
         res['_id']=str(res['_id'])
         all_fiches.append(res)
     return all_fiches
+
+
+
 
 
 
