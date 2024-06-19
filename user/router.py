@@ -280,6 +280,24 @@ async def update_user(user_id,updateuser :updateuser):
         
 
 
+
+@user_router.put("/update_user/{user_id}")
+async def update_user(user_id,newupdateuser :newupdateuser):
+
+    db["users"].update_one({"_id":ObjectId(user_id)},{
+                    "$set": {
+                        
+                        "departement": newupdateuser.departement,
+                        "phone": newupdateuser.phone,
+                     
+
+                        
+
+                    }
+                },)
+        
+
+
 @user_router.put(
     "/users/update_password/{user_id}",)
 async def updatee_password(

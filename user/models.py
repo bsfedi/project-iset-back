@@ -77,6 +77,12 @@ class updateuser(BaseModel):
     adresse: Optional[str] =""
 
 
+class newupdateuser(BaseModel):
+
+    phone: Optional[str] =""
+    departement: Optional[str] =""
+
+
 class new_password_user(BaseModel):
     old_password: str
     new_password: str
